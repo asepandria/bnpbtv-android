@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#f0f0f0</color>
+    <color name="colorPrimaryDark">#aaaaaa</color>
+    <color name="colorAccent">#d87102</color>
+
+    <color name="menu_bg1">#ebebed</color>
+    <color name="menu_bg2">#f4f4f6</color>
+</resources>

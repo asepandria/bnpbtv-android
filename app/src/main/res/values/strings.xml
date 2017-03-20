@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">BNPBTV</string>
+
+    <string name="action_search">Search</string>
+
+    <string name="open_menu">Open Menu</string>
+    <string name="close_menu">Close Menu</string>
+
+    <string name="views_video">Views Video</string>
+    <string name="loading">Loading&#8230;</string>
+    <string name="load_more">Load More</string>
+    <string name="invite">Invite your friends to the app!</string>
+    <string name="time">00:00</string>
+
+    <string name="button_retry">RETRY</string>
+
+    <string name="error_thumbnail_view">There was an error initializing the YouTubeThumbnailView (%1$s)</string>
+    <string name="error_player">There was an error initializing the YouTubePlayer (%1$s)</string>
+
+    <string name="json_format_error">Format data error.\nCoba kembali beberapa saat lagi.</string>
+    <string name="volley_no_connection_error">Tidak ada koneksi internet.\nPeriksa kembali koneksi internet Anda.</string>
+    <string name="volley_server_error">Server sedang bermasalah.\nCoba kembali beberapa saat lagi.</string>
+    <string name="volley_auth_failure_error">Server sedang bermasalah.\nCoba kembali beberapa saat lagi.</string>
+    <string name="volley_parse_error">Server sedang bermasalah.\nCoba kembali beberapa saat lagi.</string>
+    <string name="volley_network_error">Ada masalah di jaringan.\nCoba kembali beberapa saat lagi.</string>
+    <string name="volley_timeout_error">Respon server melewati batas waktu.\nCoba kembali beberapa saat lagi.</string>
+    <string name="volley_unknown_error">Terjadi kesalahan.\nCoba kembali beberapa saat lagi.</string>
+    <string name="title_activity_main">MainActivity</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
