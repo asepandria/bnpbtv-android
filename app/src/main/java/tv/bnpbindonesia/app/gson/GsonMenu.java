@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import tv.bnpbindonesia.app.object.Menu;
 
 public class GsonMenu {
-    public ArrayList<Menu> menu;
+    public ArrayList<Menu> items;
 
     public GsonMenu() {}
 }

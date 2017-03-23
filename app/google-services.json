@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "78462126975",
+    "firebase_url": "https://bnpbtv-93f90.firebaseio.com",
+    "project_id": "bnpbtv-93f90",
+    "storage_bucket": "bnpbtv-93f90.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:78462126975:android:4aa6890d91b17e61",
+        "android_client_info": {
+          "package_name": "tv.bnpbindonesia.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "78462126975-t0g57sdf3i1ttu3lciii0qe6f5n5ijje.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "tv.bnpbindonesia.app",
+            "certificate_hash": "4ebd7f1be24f680c66631e58509e61de35ca29bb"
+          }
+        },
+        {
+          "client_id": "78462126975-f2v935ip7ltk5uamqsmduiad7dsd3oa2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_J-enHbAeqhV2n9YGxkaU0hMaC3G6B0I"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "78462126975-f2v935ip7ltk5uamqsmduiad7dsd3oa2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

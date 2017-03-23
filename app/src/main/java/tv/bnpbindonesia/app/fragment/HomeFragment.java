@@ -11,10 +11,10 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Surface;
@@ -37,7 +37,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubePlayer;
-import com.google.android.youtube.player.YouTubePlayerFragment;
+import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -49,7 +49,7 @@ import tv.bnpbindonesia.app.MainActivity;
 import tv.bnpbindonesia.app.R;
 import tv.bnpbindonesia.app.adapter.ContentAdapter;
 import tv.bnpbindonesia.app.gson.GsonHeadline;
-import tv.bnpbindonesia.app.gson.GsonHome;
+import tv.bnpbindonesia.app.gson.GsonVideo;
 import tv.bnpbindonesia.app.object.Headline;
 import tv.bnpbindonesia.app.object.ItemObject;
 import tv.bnpbindonesia.app.object.Video;
@@ -87,7 +87,6 @@ public class HomeFragment extends Fragment {
 
     private String video = "";
     private String youtube = "";
-    private int totalPage;
     private int currentPage;
     private ArrayList<ItemObject> datas = new ArrayList<>();
 
@@ -101,7 +100,7 @@ public class HomeFragment extends Fragment {
     private View rootView;
     private LinearLayout layoutContent;
     private FrameLayout layoutYoutube;
-    private YouTubePlayerFragment viewYoutubePlayer;
+    private YouTubePlayerSupportFragment viewYoutubePlayer;
     private FrameLayout layoutVideo;
     private VideoView viewVideo;
     private ProgressBar viewVideoProgress;
@@ -202,7 +201,7 @@ public class HomeFragment extends Fragment {
             }
         };
 
-        adapter = new ContentAdapter(getActivity(), datas);
+        adapter = new ContentAdapter(getActivity(), this, datas);
         layoutManager = new GridLayoutManager(getActivity(), 11);
         layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
@@ -211,6 +210,7 @@ public class HomeFragment extends Fragment {
                     case ContentAdapter.TYPE_STATE_ERROR:
                     case ContentAdapter.TYPE_STATE_LOADING:
                     case ContentAdapter.TYPE_STATE_IDLE:
+                    case ContentAdapter.TYPE_EMPTY:
                         return 11;
                     case ContentAdapter.TYPE_PREVIEW_IMAGE:
                         return 6;
@@ -231,12 +231,15 @@ public class HomeFragment extends Fragment {
                 parent.removeView(rootView);
             }
         } else {
-            rootView = inflater.inflate(R.layout.fragment_home, container, false);
+            try {
+                rootView = inflater.inflate(R.layout.fragment_home, container, false);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         layoutContent = (LinearLayout) rootView.findViewById(R.id.layout_content);
         layoutYoutube = (FrameLayout) rootView.findViewById(R.id.layout_youtube);
-        viewYoutubePlayer = (YouTubePlayerFragment) getActivity().getFragmentManager().findFragmentById(R.id.youtube_player);
         layoutVideo = (FrameLayout) rootView.findViewById(R.id.layout_video);
         viewVideo = (VideoView) rootView.findViewById(R.id.video);
         viewVideoProgress = (ProgressBar) rootView.findViewById(R.id.video_progress);
@@ -253,6 +256,10 @@ public class HomeFragment extends Fragment {
         layoutError = (LinearLayout) rootView.findViewById(R.id.layout_error);
         viewErrorMessage = (TextView) rootView.findViewById(R.id.error_message);
         viewRetry = (Button) rootView.findViewById(R.id.retry);
+
+        viewYoutubePlayer = YouTubePlayerSupportFragment.newInstance();
+        FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+        transaction.replace(R.id.youtube_player, viewYoutubePlayer).commit();
 
         return rootView;
     }
@@ -274,11 +281,9 @@ public class HomeFragment extends Fragment {
                 }
             }
         });
-//        viewVideo.setMediaController(new MediaController(getActivity()));
         viewVideo.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
-//                viewVideoProgress.setVisibility(View.GONE);
                 mp.start();
                 switchVideoLayout(VIDEO_LAYOUT_READY);
                 viewVideoSeekbar.setMax(mp.getDuration());
@@ -393,7 +398,6 @@ public class HomeFragment extends Fragment {
         layoutError.setVisibility(View.GONE);
 
         startRequestHeadline();
-//        startRequest(false);
     }
 
     @Override
@@ -421,6 +425,14 @@ public class HomeFragment extends Fragment {
 
         VolleySingleton.getInstance(getActivity()).cancelPendingRequests(TAG_HEADLINE);
         VolleySingleton.getInstance(getActivity()).cancelPendingRequests(TAG_HOME);
+    }
+
+    @Override
+    public void onDestroy() {
+        viewVideo = null;
+        youTubeplayer = null;
+
+        super.onDestroy();
     }
 
     @Override
@@ -515,25 +527,25 @@ public class HomeFragment extends Fragment {
     }
 
     private void fillData(boolean isLoadMore, int totalPage, int currentPage, ArrayList<Video> videos) {
-        this.totalPage = totalPage;
         this.currentPage = currentPage;
-        Log.e(TAG, "totalPage=" + totalPage);
-        Log.e(TAG, "currentPage=" + currentPage);
         if (isLoadMore) {
             datas.remove(datas.size() - 1);
         } else {
             datas.clear();
         }
 
-
-        int i = 0;
-        for (Video video: videos) {
-            int type = i % 2 == 0 ? ContentAdapter.TYPE_PREVIEW_IMAGE : ContentAdapter.TYPE_PREVIEW_DESCRIPTION;
-            datas.add(new ItemObject(type, video));
-            i++;
+        if (videos != null) {
+            int i = 0;
+            for (Video video : videos) {
+                int type = i % 2 == 0 ? ContentAdapter.TYPE_PREVIEW_IMAGE : ContentAdapter.TYPE_PREVIEW_DESCRIPTION;
+                datas.add(new ItemObject(type, video));
+                i++;
+            }
         }
 
-        if (totalPage != currentPage) {
+        if (datas.size() == 0) {
+            datas.add(new ItemObject(ContentAdapter.TYPE_EMPTY, null));
+        } else if (totalPage != currentPage) {
             datas.add(new ItemObject(ContentAdapter.TYPE_STATE_IDLE, null));
         }
 
@@ -587,7 +599,7 @@ public class HomeFragment extends Fragment {
         VolleySingleton.getInstance(getActivity()).addToRequestQueue(request, TAG_HEADLINE);
     }
 
-    private void startRequestVideo(final boolean isLoadMore) {
+    public void startRequestVideo(final boolean isLoadMore) {
         if (isLoadMore) {
             datas.remove(datas.size() - 1);
             datas.add(new ItemObject(ContentAdapter.TYPE_STATE_LOADING, null));
@@ -606,8 +618,8 @@ public class HomeFragment extends Fragment {
                     public void onResponse(String response) {
                         Gson gson = new GsonBuilder().create();
                         try {
-                            GsonHome gsonHome = gson.fromJson(response, GsonHome.class);
-                            fillData(isLoadMore, gsonHome.total_page, gsonHome.current_page, gsonHome.video);
+                            GsonVideo gsonVideo = gson.fromJson(response, GsonVideo.class);
+                            fillData(isLoadMore, gsonVideo.total_page, gsonVideo.current_page, gsonVideo.video);
 
                             state = STATE_DONE;
                         } catch (Exception e) {

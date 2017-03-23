@@ -1,7 +1,12 @@
 package tv.bnpbindonesia.app;
 
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -10,6 +15,7 @@ import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.support.v4.view.GravityCompat;
@@ -37,6 +43,7 @@ import com.google.gson.GsonBuilder;
 import tv.bnpbindonesia.app.adapter.MenuAdapter;
 import tv.bnpbindonesia.app.fragment.ErrorFragment;
 import tv.bnpbindonesia.app.fragment.HomeFragment;
+import tv.bnpbindonesia.app.fragment.IndexFragment;
 import tv.bnpbindonesia.app.fragment.LoadingFragment;
 import tv.bnpbindonesia.app.gson.GsonMenu;
 import tv.bnpbindonesia.app.object.ItemMenu;
@@ -47,6 +54,7 @@ import tv.bnpbindonesia.app.util.VolleyStringRequest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
@@ -76,14 +84,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        itemMenus.add(new ItemMenu(MenuAdapter.TYPE_MENU, "HOME", ContextCompat.getColor(this, R.color.menu_bg2), false, true, null));
-        itemMenus.add(new ItemMenu(MenuAdapter.TYPE_MENU, "PROFILE", ContextCompat.getColor(this, R.color.menu_bg1), false, false, null));
-        itemMenus.add(new ItemMenu(MenuAdapter.TYPE_MENU_PARENT, "PROGRAM", ContextCompat.getColor(this, R.color.menu_bg2), false, false, new ArrayList<ItemMenu>()));
-        itemMenus.add(new ItemMenu(MenuAdapter.TYPE_MENU_PARENT, "FILM", ContextCompat.getColor(this, R.color.menu_bg1), false, false, new ArrayList<ItemMenu>()));
-        itemMenus.add(new ItemMenu(MenuAdapter.TYPE_MENU, "BERITA BENCANA", ContextCompat.getColor(this, R.color.menu_bg2), false, false, null));
-        itemMenus.add(new ItemMenu(MenuAdapter.TYPE_MENU, "SAHABAT TANGGUH", ContextCompat.getColor(this, R.color.menu_bg1), false, false, null));
-        itemMenus.add(new ItemMenu(MenuAdapter.TYPE_SHARE, "", ContextCompat.getColor(this, R.color.menu_bg2), false, false, null));
 
         fragments.put(ACTION_LOADING, LoadingFragment.newInstance());
 
@@ -177,7 +177,8 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    // START [PUBLIC FUNCTION]
+
+    // [ START PUBLIC FUNCTION ]
     public void onRetry(String action) {
         switch (action) {
             case ACTION_RETRY_MENU:
@@ -195,22 +196,41 @@ public class MainActivity extends AppCompatActivity {
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
     }
-    // END [PUBLIC FUNCTION]
+
+    public void onSelectMenu(int position) {
+        menuAdapter.setSelected(position);
+        drawer.closeDrawer(GravityCompat.START);
+
+        String action = itemMenus.get(position).title;
+        if (!fragments.containsKey(action)) {
+            fragments.put(action, position == 0 ? HomeFragment.newInstance(false) : IndexFragment.newInstance(action));
+        }
+        switchFragment(
+                fragments.get(action),
+                R.anim.fragment_fade_in,
+                R.anim.fragment_fade_out
+        );
+    }
+    // [ END PUBLIC FUNCTION ]
+
 
     private void initMenu(ArrayList<tv.bnpbindonesia.app.object.Menu> menus) {
-        ArrayList<ItemMenu> subMenus;
-
-        subMenus = new ArrayList<>();
+        int i = 0;
         for (tv.bnpbindonesia.app.object.Menu menu : menus) {
-            subMenus.add(new ItemMenu(MenuAdapter.TYPE_SUB_MENU, menu.menu, ContextCompat.getColor(this, R.color.menu_bg2), false, false, null));
+            String parent = menu.parent.toLowerCase();
+            if (parent.equals("main")) {
+                itemMenus.add(new ItemMenu(MenuAdapter.TYPE_MENU, menu.menu, ContextCompat.getColor(this, i % 2 == 0 ? R.color.menu_bg1 : R.color.menu_bg2), false, false, new ArrayList<ItemMenu>()));
+                i++;
+            } else {
+                for (ItemMenu itemMenu : itemMenus) {
+                    if (itemMenu.title.toLowerCase().equals(parent)) {
+                        itemMenu.type = MenuAdapter.TYPE_MENU_PARENT;
+                        itemMenu.subMenus.add(new ItemMenu(MenuAdapter.TYPE_SUB_MENU, menu.menu, itemMenu.bg_color, false, false, null));
+                    }
+                }
+            }
         }
-        itemMenus.get(2).subMenus = subMenus;
-
-        subMenus = new ArrayList<>();
-        for (tv.bnpbindonesia.app.object.Menu menu : menus) {
-            subMenus.add(new ItemMenu(MenuAdapter.TYPE_SUB_MENU, menu.menu, ContextCompat.getColor(this, R.color.menu_bg1), false, false, null));
-        }
-        itemMenus.get(3).subMenus = subMenus;
+        itemMenus.add(new ItemMenu(MenuAdapter.TYPE_SHARE, "", ContextCompat.getColor(this, R.color.menu_bg2), false, false, null));
 
         menuAdapter.notifyDataSetChanged();
     }
@@ -244,17 +264,10 @@ public class MainActivity extends AppCompatActivity {
                         Gson gson = new GsonBuilder().create();
                         try {
                             GsonMenu gsonMenu = gson.fromJson(response, GsonMenu.class);
-                            initMenu(gsonMenu.menu);
+                            initMenu(gsonMenu.items);
                             state = STATE_DONE;
-                            menuAdapter.setSelected(0);
-                            if (!fragments.containsKey(ACTION_HOME)) {
-                                fragments.put(ACTION_HOME, HomeFragment.newInstance(false));
-                            }
-                            switchFragment(
-                                    fragments.get(ACTION_HOME),
-                                    R.anim.fragment_fade_in,
-                                    R.anim.fragment_fade_out
-                            );
+
+                            onSelectMenu(0);
                         } catch (Exception e) {
                             switchFragment(
                                     ErrorFragment.newInstance(ACTION_RETRY_MENU, getString(R.string.json_format_error)),

@@ -1,7 +1,13 @@
 package tv.bnpbindonesia.app.adapter;
 
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,10 +17,14 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import tv.bnpbindonesia.app.MainActivity;
 import tv.bnpbindonesia.app.R;
 import tv.bnpbindonesia.app.object.ItemMenu;
+import tv.bnpbindonesia.app.share.Function;
+import tv.bnpbindonesia.app.share.ShareSocialMedia;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final String TAG = MenuAdapter.class.getSimpleName();
@@ -50,7 +60,7 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
+    public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
         int viewType = getItemViewType(position);
         if (viewType == TYPE_MENU || viewType == TYPE_MENU_PARENT) {
             ViewHolderMenu viewHolder = (ViewHolderMenu) holder;
@@ -66,13 +76,13 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     @Override
                     public void onClick(View v) {
                         itemMenu.isExpand = !itemMenu.isExpand;
-                        notifyItemChanged(position);
+                        notifyItemChanged(holder.getAdapterPosition());
                         if (itemMenu.isExpand) {
-                            itemMenus.addAll(position + 1, itemMenu.subMenus);
-                            notifyItemRangeInserted(position + 1, itemMenu.subMenus.size());
+                            itemMenus.addAll(holder.getAdapterPosition() + 1, itemMenu.subMenus);
+                            notifyItemRangeInserted(holder.getAdapterPosition() + 1, itemMenu.subMenus.size());
                         } else {
                             itemMenus.removeAll(itemMenu.subMenus);
-                            notifyItemRangeRemoved(position + 1, itemMenu.subMenus.size());
+                            notifyItemRangeRemoved(holder.getAdapterPosition() + 1, itemMenu.subMenus.size());
                         }
 //                        notifyDataSetChanged();
                     }
@@ -82,7 +92,8 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 viewHolder.viewLayer.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        setSelected(position);
+                        setSelected(holder.getAdapterPosition());
+                        ((MainActivity) context).onSelectMenu(holder.getAdapterPosition());
                     }
                 });
             }
@@ -96,7 +107,8 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             viewHolder.viewLayer.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    setSelected(position);
+                    setSelected(holder.getAdapterPosition());
+                    ((MainActivity) context).onSelectMenu(holder.getAdapterPosition());
                 }
             });
         } else if (viewType == TYPE_SHARE) {
@@ -107,19 +119,19 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             viewHolder.viewFb.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //
+                    ShareSocialMedia.onShare(context, "http://azkaku.com", ShareSocialMedia.SHARE_FB);
                 }
             });
             viewHolder.viewGplus.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //
+                    ShareSocialMedia.onShare(context, "http://azkaku.com", ShareSocialMedia.SHARE_GPLUS);
                 }
             });
             viewHolder.viewTwitter.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //
+                    ShareSocialMedia.onShare(context, "http://azkaku.com", ShareSocialMedia.SHARE_TWITTER);
                 }
             });
         }
