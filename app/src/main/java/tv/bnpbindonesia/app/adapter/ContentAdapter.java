@@ -14,9 +14,11 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import tv.bnpbindonesia.app.MainActivity;
 import tv.bnpbindonesia.app.R;
 import tv.bnpbindonesia.app.fragment.HomeFragment;
 import tv.bnpbindonesia.app.fragment.IndexFragment;
+import tv.bnpbindonesia.app.fragment.VideoFragment;
 import tv.bnpbindonesia.app.object.ItemObject;
 import tv.bnpbindonesia.app.object.Video;
 import tv.bnpbindonesia.app.share.Config;
@@ -35,9 +37,10 @@ public class ContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public static final int TYPE_STATE_ERROR = -1;
     public static final int TYPE_STATE_LOADING = 0;
     public static final int TYPE_STATE_IDLE = 1;
-    public static final int TYPE_EMPTY = 2;
-    public static final int TYPE_PREVIEW_IMAGE = 3;
-    public static final int TYPE_PREVIEW_DESCRIPTION = 4;
+    public static final int TYPE_HEADER = 2;
+    public static final int TYPE_DESCRIPTION = 3;
+    public static final int TYPE_PREVIEW_IMAGE = 4;
+    public static final int TYPE_PREVIEW_DESCRIPTION = 5;
 
     private String lang = Locale.getDefault().getLanguage();
     private Context context;
@@ -78,9 +81,12 @@ public class ContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         } else if (viewType == TYPE_STATE_IDLE) {
             View view = LayoutInflater.from(context).inflate(R.layout.item_state_idle, parent, false);
             return new ViewHolderStateIdle(view);
-        } else if (viewType == TYPE_EMPTY) {
-            View view = LayoutInflater.from(context).inflate(R.layout.item_empty, parent, false);
-            return new ViewHolderNone(view);
+        } else if (viewType == TYPE_HEADER) {
+            View view = LayoutInflater.from(context).inflate(R.layout.item_header, parent, false);
+            return new ViewHolderText(view);
+        } else if (viewType == TYPE_DESCRIPTION) {
+            View view = LayoutInflater.from(context).inflate(R.layout.item_description, parent, false);
+            return new ViewHolderText(view);
         } else if (viewType == TYPE_PREVIEW_IMAGE) {
             View view = LayoutInflater.from(context).inflate(R.layout.item_preview_image, parent, false);
 //            view.getLayoutParams().height = displayMetrics.widthPixels * 9 / 16;
@@ -109,6 +115,8 @@ public class ContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                         ((HomeFragment) fragment).startRequestVideo(true);
                     } else if (fragment instanceof IndexFragment) {
                         ((IndexFragment) fragment).startRequestVideo(true);
+                    } else if (fragment instanceof VideoFragment) {
+                        ((VideoFragment) fragment).startRequestVideo(true);
                     }
                 }
             });
@@ -123,33 +131,41 @@ public class ContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                         ((HomeFragment) fragment).startRequestVideo(true);
                     } else if (fragment instanceof IndexFragment) {
                         ((IndexFragment) fragment).startRequestVideo(true);
+                    } else if (fragment instanceof VideoFragment) {
+                        ((VideoFragment) fragment).startRequestVideo(true);
                     }
                 }
             });
-        } else if (viewType == TYPE_EMPTY) {
+        } else if (viewType == TYPE_HEADER) {
+            ViewHolderText viewHolder = (ViewHolderText) holder;
+            String title = (String) datas.get(position).object;
 
+            viewHolder.viewText.setText(title);
+        } else if (viewType == TYPE_DESCRIPTION) {
+            ViewHolderText viewHolder = (ViewHolderText) holder;
+            String description = (String) datas.get(position).object;
+
+            viewHolder.viewText.setText(description);
         } else if (viewType == TYPE_PREVIEW_IMAGE) {
             ViewHolderPreviewImage viewHolder = (ViewHolderPreviewImage) holder;
-            Video video = (Video) datas.get(position).object;
+            final Video video = (Video) datas.get(position).object;
 
-            if (viewHolder.viewImage.getTag() == null || !viewHolder.viewImage.getTag().equals("http://bnpbindonesia.tv/data/upload/" + video.image)) {
-                ImageLoader.getInstance().displayImage("http://bnpbindonesia.tv/data/upload/" + video.image, viewHolder.viewImage, options);
-                viewHolder.viewImage.setTag("http://bnpbindonesia.tv/data/upload/" + video.image);
+            if (viewHolder.viewImage.getTag() == null || !viewHolder.viewImage.getTag().equals(Config.URL_CONTENT + video.image)) {
+                ImageLoader.getInstance().displayImage(Config.URL_CONTENT + video.image, viewHolder.viewImage, options);
+                viewHolder.viewImage.setTag(Config.URL_CONTENT + video.image);
             }
-            viewHolder.layout.invalidate();
             viewHolder.viewTitle.setText(lang.equals(Config.LANGUANGE_INDONESIA) ? video.judul : video.judul_EN);
             viewHolder.viewDescription.setText(lang.equals(Config.LANGUANGE_INDONESIA) ? video.description : video.description_EN);
             viewHolder.viewLayer.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
+                    ((MainActivity) context).onSelectVideo(video);
                 }
             });
         } else if (viewType == TYPE_PREVIEW_DESCRIPTION) {
             ViewHolderPreviewDescription viewHolder = (ViewHolderPreviewDescription) holder;
-            Video video = (Video) datas.get(position).object;
+            final Video video = (Video) datas.get(position).object;
 
-            viewHolder.layout.invalidate();
             viewHolder.layout.setBackgroundColor(Color.parseColor((position + 1) % 4 == 0 ? "#ec8304" : "#024b98"));
             viewHolder.viewMore.setBackgroundColor(Color.parseColor((position + 1) % 4 == 0 ? "#fe8e04" : "#03438a"));
             viewHolder.viewTitle.setText(lang.equals(Config.LANGUANGE_INDONESIA) ? video.judul : video.judul_EN);
@@ -157,7 +173,7 @@ public class ContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             viewHolder.viewLayer.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
+                    ((MainActivity) context).onSelectVideo(video);
                 }
             });
         }
@@ -199,6 +215,16 @@ public class ContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             super(view);
 
             viewLayer = view.findViewById(R.id.layer);
+        }
+    }
+
+    private static class ViewHolderText extends RecyclerView.ViewHolder {
+        public TextView viewText;
+
+        public ViewHolderText(View view) {
+            super(view);
+
+            viewText = (TextView) view.findViewById(R.id.text);
         }
     }
 

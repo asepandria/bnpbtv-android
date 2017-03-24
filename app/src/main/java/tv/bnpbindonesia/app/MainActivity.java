@@ -1,12 +1,7 @@
 package tv.bnpbindonesia.app;
 
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -45,8 +40,10 @@ import tv.bnpbindonesia.app.fragment.ErrorFragment;
 import tv.bnpbindonesia.app.fragment.HomeFragment;
 import tv.bnpbindonesia.app.fragment.IndexFragment;
 import tv.bnpbindonesia.app.fragment.LoadingFragment;
+import tv.bnpbindonesia.app.fragment.VideoFragment;
 import tv.bnpbindonesia.app.gson.GsonMenu;
 import tv.bnpbindonesia.app.object.ItemMenu;
+import tv.bnpbindonesia.app.object.Video;
 import tv.bnpbindonesia.app.share.Config;
 import tv.bnpbindonesia.app.share.Function;
 import tv.bnpbindonesia.app.util.VolleySingleton;
@@ -54,7 +51,6 @@ import tv.bnpbindonesia.app.util.VolleyStringRequest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
@@ -66,9 +62,10 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String ACTION_LOADING = "loading";
     private static final String ACTION_RETRY_MENU = "retry_menu";
-    private static final String ACTION_HOME = "home";
 
     private int state = STATE_REQUEST_MENU;
+    private int selectedMenu = 0;
+    private ArrayList<Fragment> fragmentStacks = new ArrayList<>();
 
     private ArrayList<ItemMenu> itemMenus = new ArrayList<>();
     private Map<String, Fragment> fragments = new HashMap<>();
@@ -149,6 +146,16 @@ public class MainActivity extends AppCompatActivity {
             drawer.closeDrawer(GravityCompat.START);
         } else if (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        } else if (fragmentStacks.size() > 1) {
+            Fragment fragment = fragmentStacks.get(fragmentStacks.size() - 2);
+            switchFragment(
+                    fragment,
+                    R.anim.fragment_fade_in,
+                    R.anim.fragment_fade_out
+            );
+            fragmentStacks.remove(fragmentStacks.size() - 1);
+        } else if (selectedMenu != 0) {
+            onSelectMenu(0);
         } else {
             super.onBackPressed();
         }
@@ -198,6 +205,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onSelectMenu(int position) {
+        selectedMenu = position;
+        fragmentStacks.clear();
+
         menuAdapter.setSelected(position);
         drawer.closeDrawer(GravityCompat.START);
 
@@ -205,8 +215,19 @@ public class MainActivity extends AppCompatActivity {
         if (!fragments.containsKey(action)) {
             fragments.put(action, position == 0 ? HomeFragment.newInstance(false) : IndexFragment.newInstance(action));
         }
+        fragmentStacks.add(fragments.get(action));
         switchFragment(
                 fragments.get(action),
+                R.anim.fragment_fade_in,
+                R.anim.fragment_fade_out
+        );
+    }
+
+    public void onSelectVideo(Video video) {
+        Fragment fragment = VideoFragment.newInstance(video);
+        fragmentStacks.add(fragment);
+        switchFragment(
+                fragment,
                 R.anim.fragment_fade_in,
                 R.anim.fragment_fade_out
         );

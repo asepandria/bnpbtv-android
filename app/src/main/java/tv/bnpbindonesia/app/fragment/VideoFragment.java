@@ -44,14 +44,13 @@ import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import tv.bnpbindonesia.app.MainActivity;
 import tv.bnpbindonesia.app.R;
 import tv.bnpbindonesia.app.adapter.ContentAdapter;
-import tv.bnpbindonesia.app.gson.GsonHeadline;
 import tv.bnpbindonesia.app.gson.GsonVideo;
-import tv.bnpbindonesia.app.object.Headline;
 import tv.bnpbindonesia.app.object.ItemObject;
 import tv.bnpbindonesia.app.object.Video;
 import tv.bnpbindonesia.app.share.Config;
@@ -59,14 +58,13 @@ import tv.bnpbindonesia.app.share.Function;
 import tv.bnpbindonesia.app.util.VolleySingleton;
 import tv.bnpbindonesia.app.util.VolleyStringRequest;
 
-public class HomeFragment extends Fragment {
-    private static final String TAG = HomeFragment.class.getSimpleName();
+public class VideoFragment extends Fragment {
+    private static final String TAG = VideoFragment.class.getSimpleName();
     private static final String TAG_HEADLINE = "headline";
     private static final String TAG_HOME = "home";
 
-    private static final String ARG_IS_ALERT = "is_alert";
+    private static final String ARG_VIDEO = "video";
 
-    private static final int STATE_REQUEST_HEADLINE = -2;
     private static final int STATE_REQUEST_VIDEO = -1;
     private static final int STATE_DONE = 0;
 
@@ -83,13 +81,11 @@ public class HomeFragment extends Fragment {
     private static final int HANDLER_VIDEO_PROGRESS = 0;
     private static final int HANDLER_VIDEO_CONTROLLER_HIDE = 1;
 
-    private boolean isAlert;
-
-    private int state = STATE_REQUEST_HEADLINE;
+    private int state = STATE_REQUEST_VIDEO;
     private int videoLayout = VIDEO_LAYOUT_LOADING;
 
-    private String video = "";
-    private String youtube = "";
+    private Video video;
+
     private int currentPage;
     private ArrayList<ItemObject> datas = new ArrayList<>();
 
@@ -121,14 +117,14 @@ public class HomeFragment extends Fragment {
     private TextView viewErrorMessage;
     private Button viewRetry;
 
-    public HomeFragment() {
+    public VideoFragment() {
         // Required empty public constructor
     }
 
-    public static HomeFragment newInstance(boolean isAlert) {
-        HomeFragment fragment = new HomeFragment();
+    public static VideoFragment newInstance(Video video) {
+        VideoFragment fragment = new VideoFragment();
         Bundle args = new Bundle();
-        args.putBoolean(ARG_IS_ALERT, isAlert);
+        args.putSerializable(ARG_VIDEO, video);
         fragment.setArguments(args);
         return fragment;
     }
@@ -137,9 +133,10 @@ public class HomeFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            isAlert = getArguments().getBoolean(ARG_IS_ALERT);
+            video = (Video) getArguments().getSerializable(ARG_VIDEO);
         }
 
+        Log.e(TAG, "judul" + video.judul);
         displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
@@ -192,7 +189,7 @@ public class HomeFragment extends Fragment {
                 if (!wasRestored) {
                     youTubeplayer = player;
 //                        player.cueVideo(youtube);
-                    player.loadVideo(youtube);
+                    player.loadVideo(video.youtube);
                 }
             }
 
@@ -209,7 +206,7 @@ public class HomeFragment extends Fragment {
         };
 
         adapter = new ContentAdapter(getActivity(), this, datas);
-        layoutManager = new GridLayoutManager(getActivity(), 11);
+        layoutManager = new GridLayoutManager(getActivity(), 2);
         layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
@@ -218,11 +215,10 @@ public class HomeFragment extends Fragment {
                     case ContentAdapter.TYPE_STATE_LOADING:
                     case ContentAdapter.TYPE_STATE_IDLE:
                     case ContentAdapter.TYPE_HEADER:
-                        return 11;
+                    case ContentAdapter.TYPE_DESCRIPTION:
+                        return 2;
                     case ContentAdapter.TYPE_PREVIEW_IMAGE:
-                        return 6;
-                    case ContentAdapter.TYPE_PREVIEW_DESCRIPTION:
-                        return 5;
+                        return 1;
                     default:
                         return -1;
                 }
@@ -232,18 +228,7 @@ public class HomeFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-//        if (rootView != null) {
-//            ViewGroup parent = (ViewGroup) rootView.getParent();
-//            if (parent != null) {
-//                parent.removeView(rootView);
-//            }
-//        } else {
-//            try {
-                View rootView = inflater.inflate(R.layout.fragment_home, container, false);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
+        View rootView = inflater.inflate(R.layout.fragment_video, container, false);
 
         layoutContent = (LinearLayout) rootView.findViewById(R.id.layout_content);
         layoutYoutube = (FrameLayout) rootView.findViewById(R.id.layout_youtube);
@@ -252,6 +237,7 @@ public class HomeFragment extends Fragment {
         viewVideoError = (TextView) rootView.findViewById(R.id.video_error);
         viewVideoProgress = (ProgressBar) rootView.findViewById(R.id.video_progress);
         viewVideoPlay = (ImageView) rootView.findViewById(R.id.video_play);
+        ;
         viewVideoPause = (ImageView) rootView.findViewById(R.id.video_pause);
         layoutVideoController = (FrameLayout) rootView.findViewById(R.id.layout_video_controller);
         viewVideoCurrent = (TextView) rootView.findViewById(R.id.video_current);
@@ -387,7 +373,6 @@ public class HomeFragment extends Fragment {
         viewVideos.setLayoutManager(layoutManager);
         viewVideos.setAdapter(adapter);
         viewVideos.getRecycledViewPool().setMaxRecycledViews(ContentAdapter.TYPE_PREVIEW_IMAGE, 0);
-        viewVideos.getRecycledViewPool().setMaxRecycledViews(ContentAdapter.TYPE_PREVIEW_DESCRIPTION, 0);
         viewVideos.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -407,11 +392,7 @@ public class HomeFragment extends Fragment {
         viewRetry.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (state == STATE_REQUEST_HEADLINE) {
-                    startRequestHeadline();
-                } else if (state == STATE_REQUEST_VIDEO) {
-                    startRequestVideo(false);
-                }
+                startRequestVideo(false);
             }
         });
 
@@ -419,11 +400,9 @@ public class HomeFragment extends Fragment {
         layoutLoading.setVisibility(View.GONE);
         layoutError.setVisibility(View.GONE);
 
-        if (state == STATE_REQUEST_HEADLINE) {
-            startRequestHeadline();
-        } else if (state == STATE_REQUEST_VIDEO) {
+        if (state == STATE_REQUEST_VIDEO) {
             startRequestVideo(false);
-        } else {
+        } else if (state == STATE_DONE) {
             switchLayout(LAYOUT_CONTENT, null);
             startVideo();
             startYoutube();
@@ -434,11 +413,10 @@ public class HomeFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
-        if (!video.isEmpty() && viewVideo != null) {
+        if (!video.video.isEmpty() && viewVideo != null) {
             viewVideo.start();
         }
-        if (!youtube.isEmpty() && youTubeplayer != null) {
-            Log.e(TAG, "youTubeplayer.play()");
+        if (!video.youtube.isEmpty() && youTubeplayer != null) {
             youTubeplayer.play();
         }
     }
@@ -447,11 +425,11 @@ public class HomeFragment extends Fragment {
     public void onStop() {
         super.onStop();
 
-        if (!video.isEmpty() && viewVideo != null) {
+        if (!video.video.isEmpty() && viewVideo != null) {
             viewVideo.pause();
             handlerVideo.removeMessages(HANDLER_VIDEO_PROGRESS);
         }
-        if (!youtube.isEmpty() && youTubeplayer != null) {
+        if (!video.youtube.isEmpty() && youTubeplayer != null) {
             youTubeplayer.pause();
         }
 
@@ -551,15 +529,16 @@ public class HomeFragment extends Fragment {
     }
 
     private void startVideo() {
-        if (!video.isEmpty()) {
+        if (!video.video.isEmpty()) {
             layoutVideo.setVisibility(View.VISIBLE);
             switchVideoLayout(VIDEO_LAYOUT_LOADING);
-            viewVideo.setVideoURI(Uri.parse(video));
+            viewVideo.setVideoURI(Uri.parse(Config.URL_CONTENT + video.video));
+//            viewVideo.setVideoURI(Uri.parse("http://bnpbindonesia.tv/data/upload/db-Kondisi-Terkini-13-sekolah-148234313021122016.mp4"));
         }
     }
 
     private void startYoutube() {
-        if (!youtube.isEmpty()) {
+        if (!video.youtube.isEmpty()) {
             layoutYoutube.setVisibility(View.VISIBLE);
             viewYoutubePlayer.initialize(Config.YOUTUBE_API_KEY, onInitializedListener);
         }
@@ -571,14 +550,16 @@ public class HomeFragment extends Fragment {
             datas.remove(datas.size() - 1);
         } else {
             datas.clear();
+
+            String lang = Locale.getDefault().getLanguage();
+            datas.add(new ItemObject(ContentAdapter.TYPE_HEADER, lang.equals(Config.LANGUANGE_INDONESIA) ? video.judul : video.judul_EN));
+            datas.add(new ItemObject(ContentAdapter.TYPE_DESCRIPTION, lang.equals(Config.LANGUANGE_INDONESIA) ? video.description : video.description_EN));
+            datas.add(new ItemObject(ContentAdapter.TYPE_HEADER, "Related Videos"));
         }
 
         if (videos != null) {
-            int i = 0;
             for (Video video : videos) {
-                int type = i % 2 == 0 ? ContentAdapter.TYPE_PREVIEW_IMAGE : ContentAdapter.TYPE_PREVIEW_DESCRIPTION;
-                datas.add(new ItemObject(type, video));
-                i++;
+                datas.add(new ItemObject(ContentAdapter.TYPE_PREVIEW_IMAGE, video));
             }
         }
 
@@ -594,51 +575,6 @@ public class HomeFragment extends Fragment {
             startYoutube();
         }
         adapter.notifyDataSetChanged();
-    }
-
-    private void startRequestHeadline() {
-        switchLayout(LAYOUT_LOADING, null);
-
-        VolleyStringRequest request = new VolleyStringRequest(
-                Request.Method.POST,
-                Config.URL_BASE,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        Gson gson = new GsonBuilder().create();
-                        try {
-                            Log.e(TAG, response);
-                            GsonHeadline gsonHeadline = gson.fromJson(response, GsonHeadline.class);
-                            for (Headline headline : gsonHeadline.headline) {
-                                video = headline.video;
-                                youtube = headline.youtube;
-//                                video = "http://bnpbindonesia.tv/data/upload/db-Kondisi-Terkini-13-sekolah-148234313021122016.mp4";
-                                break;
-                            }
-
-                            state = STATE_REQUEST_VIDEO;
-                            startRequestVideo(false);
-                        } catch (Exception e) {
-                            switchLayout(LAYOUT_ERROR, getString(R.string.json_format_error));
-                        }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        switchLayout(LAYOUT_ERROR, Function.parseVolleyError(getActivity(), error));
-                    }
-                }
-        ) {
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> params = new HashMap<>();
-                params.put("function", "headline");
-                return params;
-            }
-        };
-        VolleySingleton.getInstance(getActivity()).cancelPendingRequests(TAG_HEADLINE);
-        VolleySingleton.getInstance(getActivity()).addToRequestQueue(request, TAG_HEADLINE);
     }
 
     public void startRequestVideo(final boolean isLoadMore) {
@@ -695,6 +631,7 @@ public class HomeFragment extends Fragment {
                 params.put("function", "video");
                 if (isLoadMore) {
                     params.put("page", String.valueOf(currentPage + 1));
+                    params.put("category", video.category);
                 }
                 return params;
             }

@@ -6,5 +6,5 @@ public class Config {
     public static final String YOUTUBE_API_KEY = "AIzaSyDmmKnHX_-hQfOOfHKHrnD0FQRJEVPlRnU";
 
     public static final String URL_BASE = "http://www.bnpbindonesia.tv/api/";
-    public static final String URL_MAIN = URL_BASE + "main.php";
+    public static final String URL_CONTENT = "http://bnpbindonesia.tv/data/upload/";
 }

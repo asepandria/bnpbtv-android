@@ -6,7 +6,6 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -101,7 +100,7 @@ public class IndexFragment extends Fragment {
                     case ContentAdapter.TYPE_STATE_ERROR:
                     case ContentAdapter.TYPE_STATE_LOADING:
                     case ContentAdapter.TYPE_STATE_IDLE:
-                    case ContentAdapter.TYPE_EMPTY:
+                    case ContentAdapter.TYPE_HEADER:
                         return 2;
                     case ContentAdapter.TYPE_PREVIEW_IMAGE:
                         return 1;
@@ -140,13 +139,15 @@ public class IndexFragment extends Fragment {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 int lastView = ((GridLayoutManager) recyclerView.getLayoutManager()).findLastVisibleItemPosition();
-                if (datas.get(lastView).type == ContentAdapter.TYPE_STATE_ERROR || datas.get(lastView).type == ContentAdapter.TYPE_STATE_IDLE) {
-                    recyclerView.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            startRequestVideo(true);
-                        }
-                    });
+                if (lastView > -1 && lastView < datas.size()) {
+                    if (datas.get(lastView).type == ContentAdapter.TYPE_STATE_ERROR || datas.get(lastView).type == ContentAdapter.TYPE_STATE_IDLE) {
+                        recyclerView.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                startRequestVideo(true);
+                            }
+                        });
+                    }
                 }
             }
         });
@@ -162,7 +163,15 @@ public class IndexFragment extends Fragment {
         layoutEmpty.setVisibility(View.GONE);
         layoutError.setVisibility(View.GONE);
 
-        startRequestVideo(false);
+        if (state == STATE_REQUEST_VIDEO) {
+            startRequestVideo(false);
+        } else if (state == STATE_DONE) {
+            if (datas.size() == 0) {
+                switchLayout(LAYOUT_EMPTY, null);
+            } else {
+                switchLayout(LAYOUT_CONTENT, null);
+            }
+        }
     }
 
     @Override
@@ -209,7 +218,6 @@ public class IndexFragment extends Fragment {
         }
 
         if (datas.size() == 0) {
-            datas.add(new ItemObject(ContentAdapter.TYPE_EMPTY, null));
             switchLayout(LAYOUT_EMPTY, null);
         } else {
             if (totalPage != currentPage) {

@@ -1,6 +1,8 @@
 package tv.bnpbindonesia.app.object;
 
-public class Video {
+import java.io.Serializable;
+
+public class Video implements Serializable {
     public String id;
     public String idvideo;
     public String category;
