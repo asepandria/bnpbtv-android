@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import tv.bnpbindonesia.app.MainActivity;
 import tv.bnpbindonesia.app.R;
+import tv.bnpbindonesia.app.fragment.AlertFragment;
 import tv.bnpbindonesia.app.fragment.HomeFragment;
 import tv.bnpbindonesia.app.fragment.IndexFragment;
 import tv.bnpbindonesia.app.fragment.VideoFragment;
@@ -112,11 +113,13 @@ public class ContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 @Override
                 public void onClick(View v) {
                     if (fragment instanceof HomeFragment) {
-                        ((HomeFragment) fragment).startRequestVideo(true);
+                        ((HomeFragment) fragment).startRequestVideos(true);
                     } else if (fragment instanceof IndexFragment) {
-                        ((IndexFragment) fragment).startRequestVideo(true);
+                        ((IndexFragment) fragment).startRequestVideos(true);
                     } else if (fragment instanceof VideoFragment) {
-                        ((VideoFragment) fragment).startRequestVideo(true);
+                        ((VideoFragment) fragment).startRequestVideos(true);
+                    } else if (fragment instanceof AlertFragment) {
+                        ((AlertFragment) fragment).startRequestVideos(true);
                     }
                 }
             });
@@ -128,11 +131,13 @@ public class ContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 @Override
                 public void onClick(View v) {
                     if (fragment instanceof HomeFragment) {
-                        ((HomeFragment) fragment).startRequestVideo(true);
+                        ((HomeFragment) fragment).startRequestVideos(true);
                     } else if (fragment instanceof IndexFragment) {
-                        ((IndexFragment) fragment).startRequestVideo(true);
+                        ((IndexFragment) fragment).startRequestVideos(true);
                     } else if (fragment instanceof VideoFragment) {
-                        ((VideoFragment) fragment).startRequestVideo(true);
+                        ((VideoFragment) fragment).startRequestVideos(true);
+                    } else if (fragment instanceof AlertFragment) {
+                        ((AlertFragment) fragment).startRequestVideos(true);
                     }
                 }
             });
@@ -150,9 +155,9 @@ public class ContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             ViewHolderPreviewImage viewHolder = (ViewHolderPreviewImage) holder;
             final Video video = (Video) datas.get(position).object;
 
-            if (viewHolder.viewImage.getTag() == null || !viewHolder.viewImage.getTag().equals(Config.URL_CONTENT + video.image)) {
-                ImageLoader.getInstance().displayImage(Config.URL_CONTENT + video.image, viewHolder.viewImage, options);
-                viewHolder.viewImage.setTag(Config.URL_CONTENT + video.image);
+            if (viewHolder.viewImage.getTag() == null || !viewHolder.viewImage.getTag().equals(video.image)) {
+                ImageLoader.getInstance().displayImage(video.image, viewHolder.viewImage, options);
+                viewHolder.viewImage.setTag(video.image);
             }
             viewHolder.viewTitle.setText(lang.equals(Config.LANGUANGE_INDONESIA) ? video.judul : video.judul_EN);
             viewHolder.viewDescription.setText(lang.equals(Config.LANGUANGE_INDONESIA) ? video.description : video.description_EN);

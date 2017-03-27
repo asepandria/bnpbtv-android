@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#e9e9e9"
+    android:gravity="end"
+    android:orientation="horizontal"
+    android:padding="8dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginRight="8dp"
+        android:lines="1"
+        android:text="@string/please_share"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/share_fb"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="8dp"
+        android:background="#3b5b96"
+        android:clickable="true"
+        android:drawableLeft="@drawable/ic_share_fb"
+        android:gravity="center"
+        android:lines="1"
+        android:paddingRight="8dp"
+        android:text="@string/fb"
+        android:textColor="@android:color/white"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/share_twitter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="8dp"
+        android:background="#2aa7e1"
+        android:clickable="true"
+        android:drawableLeft="@drawable/ic_share_twitter"
+        android:gravity="center"
+        android:lines="1"
+        android:paddingRight="8dp"
+        android:text="@string/twitter"
+        android:textColor="@android:color/white"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/share_more"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#f96e45"
+        android:clickable="true"
+        android:drawableLeft="@drawable/ic_add_white_24dp"
+        android:gravity="center"
+        android:lines="1"
+        android:ellipsize="end"
+        android:paddingRight="8dp"
+        android:text="@string/more"
+        android:textColor="@android:color/white"
+        android:textSize="12sp" />
+</LinearLayout>

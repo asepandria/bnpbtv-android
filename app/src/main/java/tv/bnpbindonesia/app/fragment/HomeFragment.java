@@ -15,7 +15,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Surface;
@@ -62,12 +61,10 @@ import tv.bnpbindonesia.app.util.VolleyStringRequest;
 public class HomeFragment extends Fragment {
     private static final String TAG = HomeFragment.class.getSimpleName();
     private static final String TAG_HEADLINE = "headline";
-    private static final String TAG_HOME = "home";
-
-    private static final String ARG_IS_ALERT = "is_alert";
+    private static final String TAG_VIDEOS = "videos";
 
     private static final int STATE_REQUEST_HEADLINE = -2;
-    private static final int STATE_REQUEST_VIDEO = -1;
+    private static final int STATE_REQUEST_VIDEOS = -1;
     private static final int STATE_DONE = 0;
 
     private static final int RECOVERY_DIALOG_REQUEST = 1;
@@ -82,8 +79,6 @@ public class HomeFragment extends Fragment {
 
     private static final int HANDLER_VIDEO_PROGRESS = 0;
     private static final int HANDLER_VIDEO_CONTROLLER_HIDE = 1;
-
-    private boolean isAlert;
 
     private int state = STATE_REQUEST_HEADLINE;
     private int videoLayout = VIDEO_LAYOUT_LOADING;
@@ -125,20 +120,14 @@ public class HomeFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static HomeFragment newInstance(boolean isAlert) {
+    public static HomeFragment newInstance() {
         HomeFragment fragment = new HomeFragment();
-        Bundle args = new Bundle();
-        args.putBoolean(ARG_IS_ALERT, isAlert);
-        fragment.setArguments(args);
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            isAlert = getArguments().getBoolean(ARG_IS_ALERT);
-        }
 
         displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -191,7 +180,6 @@ public class HomeFragment extends Fragment {
 
                 if (!wasRestored) {
                     youTubeplayer = player;
-//                        player.cueVideo(youtube);
                     player.loadVideo(youtube);
                 }
             }
@@ -397,7 +385,7 @@ public class HomeFragment extends Fragment {
                         recyclerView.post(new Runnable() {
                             @Override
                             public void run() {
-                                startRequestVideo(true);
+                                startRequestVideos(true);
                             }
                         });
                     }
@@ -409,8 +397,8 @@ public class HomeFragment extends Fragment {
             public void onClick(View v) {
                 if (state == STATE_REQUEST_HEADLINE) {
                     startRequestHeadline();
-                } else if (state == STATE_REQUEST_VIDEO) {
-                    startRequestVideo(false);
+                } else if (state == STATE_REQUEST_VIDEOS) {
+                    startRequestVideos(false);
                 }
             }
         });
@@ -421,9 +409,9 @@ public class HomeFragment extends Fragment {
 
         if (state == STATE_REQUEST_HEADLINE) {
             startRequestHeadline();
-        } else if (state == STATE_REQUEST_VIDEO) {
-            startRequestVideo(false);
-        } else {
+        } else if (state == STATE_REQUEST_VIDEOS) {
+            startRequestVideos(false);
+        } else if (state == STATE_DONE) {
             switchLayout(LAYOUT_CONTENT, null);
             startVideo();
             startYoutube();
@@ -434,11 +422,10 @@ public class HomeFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
-        if (!video.isEmpty() && viewVideo != null) {
+        if (!video.isEmpty() && !video.contains(Config.YOUTUBE) && viewVideo != null) {
             viewVideo.start();
         }
         if (!youtube.isEmpty() && youTubeplayer != null) {
-            Log.e(TAG, "youTubeplayer.play()");
             youTubeplayer.play();
         }
     }
@@ -447,7 +434,7 @@ public class HomeFragment extends Fragment {
     public void onStop() {
         super.onStop();
 
-        if (!video.isEmpty() && viewVideo != null) {
+        if (!video.isEmpty() && !video.contains(Config.YOUTUBE) && viewVideo != null) {
             viewVideo.pause();
             handlerVideo.removeMessages(HANDLER_VIDEO_PROGRESS);
         }
@@ -456,7 +443,7 @@ public class HomeFragment extends Fragment {
         }
 
         VolleySingleton.getInstance(getActivity()).cancelPendingRequests(TAG_HEADLINE);
-        VolleySingleton.getInstance(getActivity()).cancelPendingRequests(TAG_HOME);
+        VolleySingleton.getInstance(getActivity()).cancelPendingRequests(TAG_VIDEOS);
     }
 
     @Override
@@ -551,7 +538,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void startVideo() {
-        if (!video.isEmpty()) {
+        if (!video.isEmpty() && !video.contains(Config.YOUTUBE)) {
             layoutVideo.setVisibility(View.VISIBLE);
             switchVideoLayout(VIDEO_LAYOUT_LOADING);
             viewVideo.setVideoURI(Uri.parse(video));
@@ -567,11 +554,16 @@ public class HomeFragment extends Fragment {
 
     private void fillData(boolean isLoadMore, int totalPage, int currentPage, ArrayList<Video> videos) {
         this.currentPage = currentPage;
+
         if (isLoadMore) {
             datas.remove(datas.size() - 1);
+            adapter.notifyItemRemoved(datas.size());
         } else {
             datas.clear();
+            adapter.notifyDataSetChanged();
         }
+
+        int lastSize = datas.size();
 
         if (videos != null) {
             int i = 0;
@@ -593,7 +585,10 @@ public class HomeFragment extends Fragment {
             startVideo();
             startYoutube();
         }
-        adapter.notifyDataSetChanged();
+
+        if (lastSize < datas.size()) {
+            adapter.notifyItemRangeInserted(lastSize, datas.size() - lastSize);
+        }
     }
 
     private void startRequestHeadline() {
@@ -607,17 +602,15 @@ public class HomeFragment extends Fragment {
                     public void onResponse(String response) {
                         Gson gson = new GsonBuilder().create();
                         try {
-                            Log.e(TAG, response);
                             GsonHeadline gsonHeadline = gson.fromJson(response, GsonHeadline.class);
                             for (Headline headline : gsonHeadline.headline) {
                                 video = headline.video;
                                 youtube = headline.youtube;
-//                                video = "http://bnpbindonesia.tv/data/upload/db-Kondisi-Terkini-13-sekolah-148234313021122016.mp4";
                                 break;
                             }
 
-                            state = STATE_REQUEST_VIDEO;
-                            startRequestVideo(false);
+                            state = STATE_REQUEST_VIDEOS;
+                            startRequestVideos(false);
                         } catch (Exception e) {
                             switchLayout(LAYOUT_ERROR, getString(R.string.json_format_error));
                         }
@@ -641,7 +634,7 @@ public class HomeFragment extends Fragment {
         VolleySingleton.getInstance(getActivity()).addToRequestQueue(request, TAG_HEADLINE);
     }
 
-    public void startRequestVideo(final boolean isLoadMore) {
+    public void startRequestVideos(final boolean isLoadMore) {
         if (isLoadMore) {
             datas.remove(datas.size() - 1);
             datas.add(new ItemObject(ContentAdapter.TYPE_STATE_LOADING, null));
@@ -699,7 +692,7 @@ public class HomeFragment extends Fragment {
                 return params;
             }
         };
-        VolleySingleton.getInstance(getActivity()).cancelPendingRequests(TAG_HOME);
-        VolleySingleton.getInstance(getActivity()).addToRequestQueue(request, TAG_HOME);
+        VolleySingleton.getInstance(getActivity()).cancelPendingRequests(TAG_VIDEOS);
+        VolleySingleton.getInstance(getActivity()).addToRequestQueue(request, TAG_VIDEOS);
     }
 }

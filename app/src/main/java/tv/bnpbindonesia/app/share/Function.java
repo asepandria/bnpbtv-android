@@ -1,6 +1,9 @@
 package tv.bnpbindonesia.app.share;
 
 import android.content.Context;
+import android.text.Html;
+import android.text.Spanned;
+import android.util.Log;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkError;
@@ -9,10 +12,16 @@ import com.android.volley.ParseError;
 import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
+import com.google.android.gms.maps.model.LatLng;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import tv.bnpbindonesia.app.R;
 
 public class Function {
+    private static final String TAG = Function.class.getSimpleName();
+
     public static String parseVolleyError(Context context, VolleyError error) {
         String result = "";
 
@@ -48,28 +57,33 @@ public class Function {
         return Hour + Minute + Second;
     }
 
-//    public static void openToolbarSearch(Context context, boolean isOpen) {
-//        ImageView toolbarLogo = (ImageView) ((Activity) context).findViewById(R.id.toolbar_logo);
-//        EditText toolbarSearch = (EditText) ((Activity) context).findViewById(R.id.toolbar_search);
-//
-//        toolbarLogo.setVisibility(isOpen ? View.GONE : View.VISIBLE);
-//        toolbarSearch.setVisibility(isOpen ? View.VISIBLE : View.GONE);
-//        toolbarLogo.startAnimation(AnimationUtils.loadAnimation(context, isOpen ? R.anim.toolbar_exit_up : R.anim.toolbar_enter_down));
-//        toolbarSearch.startAnimation(AnimationUtils.loadAnimation(context, isOpen ? R.anim.toolbar_enter_up : R.anim.toolbar_exit_down));
-//
-//        InputMethodManager inputMethodManager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-//        if (isOpen) {
-//            toolbarSearch.requestFocus();
-//            inputMethodManager.showSoftInput(toolbarSearch, InputMethodManager.SHOW_IMPLICIT);
-//        } else {
-//            toolbarSearch.setText("");
-//            toolbarSearch.clearFocus();
-//            inputMethodManager.hideSoftInputFromWindow(toolbarSearch.getWindowToken(), 0);
-//        }
-//    }
+    public static LatLng getLatLng(String url) {
+        LatLng position = null;
+        Pattern pattern = Pattern.compile(".*/@(.*?)z/.*");
+        Matcher matcher = pattern.matcher(url);
+        if (matcher.matches()) {
+            try {
+                String[] matches = matcher.group(1).split(",");
+                Double lat = Double.valueOf(matches[0]);
+                Double lng = Double.valueOf(matches[1]);
+                position = new LatLng(lat, lng);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
-//    public static boolean isToolbarSearch(Context context) {
-//        EditText toolbarSearch = (EditText) ((Activity) context).findViewById(R.id.toolbar_search);
-//        return toolbarSearch.getVisibility() == View.VISIBLE;
-//    }
+        }
+
+        return position;
+    }
+
+    @SuppressWarnings("deprecation")
+    public static Spanned fromHtml(String html){
+        Spanned result;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            result = Html.fromHtml(html,Html.FROM_HTML_MODE_LEGACY);
+        } else {
+            result = Html.fromHtml(html);
+        }
+        return result;
+    }
 }

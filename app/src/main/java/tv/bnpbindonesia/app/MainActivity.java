@@ -1,6 +1,7 @@
 package tv.bnpbindonesia.app;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,7 +11,6 @@ import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.support.v4.view.GravityCompat;
@@ -36,12 +36,15 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import tv.bnpbindonesia.app.adapter.MenuAdapter;
+import tv.bnpbindonesia.app.fragment.AlertFragment;
+import tv.bnpbindonesia.app.fragment.DetailAlertFragment;
 import tv.bnpbindonesia.app.fragment.ErrorFragment;
 import tv.bnpbindonesia.app.fragment.HomeFragment;
 import tv.bnpbindonesia.app.fragment.IndexFragment;
 import tv.bnpbindonesia.app.fragment.LoadingFragment;
 import tv.bnpbindonesia.app.fragment.VideoFragment;
 import tv.bnpbindonesia.app.gson.GsonMenu;
+import tv.bnpbindonesia.app.object.Alert;
 import tv.bnpbindonesia.app.object.ItemMenu;
 import tv.bnpbindonesia.app.object.Video;
 import tv.bnpbindonesia.app.share.Config;
@@ -57,11 +60,15 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String TAG_MENU = "menu";
 
+    private static final String EXTRA_IS_ALERT = "isAlert";
+
     private static final int STATE_REQUEST_MENU = -1;
     private static final int STATE_DONE = 0;
 
     private static final String ACTION_LOADING = "loading";
     private static final String ACTION_RETRY_MENU = "retry_menu";
+
+    private boolean isAlert;
 
     private int state = STATE_REQUEST_MENU;
     private int selectedMenu = 0;
@@ -78,9 +85,22 @@ public class MainActivity extends AppCompatActivity {
     private EditText viewSearch;
     private RecyclerView viewMenus;
 
+    public static Intent newInstance(Context context, boolean isAlert) {
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.putExtra(EXTRA_IS_ALERT, isAlert);
+
+        return intent;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Intent extra = getIntent();
+        if (extra != null) {
+            if (extra.hasExtra(EXTRA_IS_ALERT)) isAlert = extra.getBooleanExtra(EXTRA_IS_ALERT, false);
+        }
+
 
         fragments.put(ACTION_LOADING, LoadingFragment.newInstance());
 
@@ -211,20 +231,31 @@ public class MainActivity extends AppCompatActivity {
         menuAdapter.setSelected(position);
         drawer.closeDrawer(GravityCompat.START);
 
-        String action = itemMenus.get(position).title;
-        if (!fragments.containsKey(action)) {
-            fragments.put(action, position == 0 ? HomeFragment.newInstance(false) : IndexFragment.newInstance(action));
+        String menu = itemMenus.get(position).title;
+        if (!fragments.containsKey(menu)) {
+            fragments.put(menu, position == 0 ? (isAlert ? AlertFragment.newInstance() : HomeFragment.newInstance()) : IndexFragment.newInstance(false, menu));
+//            fragments.put(menu, position == 0 ? (AlertFragment.newInstance()) : IndexFragment.newInstance(false, menu));
         }
-        fragmentStacks.add(fragments.get(action));
+        fragmentStacks.add(fragments.get(menu));
         switchFragment(
-                fragments.get(action),
+                fragments.get(menu),
                 R.anim.fragment_fade_in,
                 R.anim.fragment_fade_out
         );
     }
 
     public void onSelectVideo(Video video) {
-        Fragment fragment = VideoFragment.newInstance(video);
+        Fragment fragment = VideoFragment.newInstance(video.id, video);
+        fragmentStacks.add(fragment);
+        switchFragment(
+                fragment,
+                R.anim.fragment_fade_in,
+                R.anim.fragment_fade_out
+        );
+    }
+
+    public void onSelectAlert(Alert alert) {
+        Fragment fragment = DetailAlertFragment.newInstance(alert.id, alert);
         fragmentStacks.add(fragment);
         switchFragment(
                 fragment,
@@ -262,6 +293,16 @@ public class MainActivity extends AppCompatActivity {
         InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(viewSearch.getWindowToken(), 0);
 
+        selectedMenu = -1;
+        fragmentStacks.clear();
+
+        Fragment fragment = IndexFragment.newInstance(true, viewSearch.getText().toString());
+        fragmentStacks.add(fragment);
+        switchFragment(
+                fragment,
+                R.anim.fragment_fade_in,
+                R.anim.fragment_fade_out
+        );
     }
 
     private void switchFragment(Fragment fragment, int animIn, int animOut) {

@@ -13,6 +13,12 @@
     <string name="time">00:00</string>
     <string name="video_error">Can\'t play this video</string>
     <string name="empty_content">No Data Available</string>
+    <string name="more_detail">More Details</string>
+    <string name="details">Details</string>
+    <string name="please_share">Please Share:</string>
+    <string name="fb">Facebook</string>
+    <string name="twitter">Twitter</string>
+    <string name="more">More</string>
 
     <string name="button_retry">RETRY</string>
 

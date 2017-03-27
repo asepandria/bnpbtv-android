@@ -9,8 +9,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:padding="16dp"
-        android:text="@string/load_more"
-        android:textSize="18sp" />
+        android:text="@string/load_more" />
 
     <View
         android:id="@+id/layer"
