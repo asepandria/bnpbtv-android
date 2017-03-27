@@ -15,7 +15,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Surface;
@@ -50,13 +49,12 @@ import java.util.Map;
 import tv.bnpbindonesia.app.MainActivity;
 import tv.bnpbindonesia.app.R;
 import tv.bnpbindonesia.app.adapter.ContentAdapter;
-import tv.bnpbindonesia.app.gson.GsonHeadline;
 import tv.bnpbindonesia.app.gson.GsonVideo;
-import tv.bnpbindonesia.app.object.Headline;
 import tv.bnpbindonesia.app.object.ItemObject;
 import tv.bnpbindonesia.app.object.Video;
 import tv.bnpbindonesia.app.share.Config;
 import tv.bnpbindonesia.app.share.Function;
+import tv.bnpbindonesia.app.share.ShareSocialMedia;
 import tv.bnpbindonesia.app.util.VolleySingleton;
 import tv.bnpbindonesia.app.util.VolleyStringRequest;
 
@@ -154,9 +152,11 @@ public class VideoFragment extends Fragment {
             public void handleMessage(Message msg) {
                 switch (msg.what) {
                     case HANDLER_VIDEO_PROGRESS:
-                        viewVideoCurrent.setText(Function.ConvertMSTOHMS(viewVideo.getCurrentPosition()));
-                        viewVideoSeekbar.setProgress(viewVideo.getCurrentPosition());
-                        sendEmptyMessageDelayed(HANDLER_VIDEO_PROGRESS, 250);
+                        if (viewVideo != null) {
+                            viewVideoCurrent.setText(Function.ConvertMSTOHMS(viewVideo.getCurrentPosition()));
+                            viewVideoSeekbar.setProgress(viewVideo.getCurrentPosition());
+                            sendEmptyMessageDelayed(HANDLER_VIDEO_PROGRESS, 250);
+                        }
                         break;
                     case HANDLER_VIDEO_CONTROLLER_HIDE:
                         if (layoutVideoController.getVisibility() == View.VISIBLE) {
@@ -181,7 +181,7 @@ public class VideoFragment extends Fragment {
 
                     @Override
                     public void onStopped() {
-                        if (youTubeplayer.getCurrentTimeMillis() == youTubeplayer.getDurationMillis()) {
+                        if (youTubeplayer != null && youTubeplayer.getCurrentTimeMillis() == youTubeplayer.getDurationMillis()) {
                             youTubeplayer.setFullscreen(false);
                         }
                     }
@@ -402,6 +402,8 @@ public class VideoFragment extends Fragment {
             public void onClick(View v) {
                 if (state == STATE_REQUEST_VIDEO) {
                     startRequestVideo();
+                } else if (state == STATE_REQUEST_VIDEOS) {
+                    startRequestVideos(false);
                 } else if (state == STATE_DONE) {
                     startRequestVideos(false);
                 }
@@ -591,6 +593,7 @@ public class VideoFragment extends Fragment {
             switchLayout(LAYOUT_CONTENT, null);
             startVideo();
             startYoutube();
+            ShareSocialMedia.initShareLayout(getActivity(), "http://azkaku.com");
         }
 
         if (lastSize < datas.size()) {

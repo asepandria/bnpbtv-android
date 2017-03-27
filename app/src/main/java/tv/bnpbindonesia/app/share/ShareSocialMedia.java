@@ -6,6 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.v4.app.ShareCompat;
+import android.view.View;
+import android.widget.TextView;
+
+import tv.bnpbindonesia.app.R;
 
 public class ShareSocialMedia {
     public static final String TAG = ShareSocialMedia.class.getSimpleName();
@@ -14,7 +18,7 @@ public class ShareSocialMedia {
     public static final int SHARE_GPLUS = 2;
     public static final int SHARE_TWITTER = 3;
 
-    public static void onShare(Context context, String url, int socialMedia) {
+    public static void onShare(Activity activity, String url, int socialMedia) {
         String appSocialMedia = "";
         switch (socialMedia) {
             case SHARE_FB:
@@ -28,7 +32,7 @@ public class ShareSocialMedia {
                 break;
         }
 
-        Intent intentShareApp = ShareCompat.IntentBuilder.from((Activity) context)
+        Intent intentShareApp = ShareCompat.IntentBuilder.from(activity)
                 .setType("text/plain")
                 .setSubject("subject")
                 .setText(url)
@@ -36,7 +40,7 @@ public class ShareSocialMedia {
                 .setPackage(appSocialMedia);
 
         try {
-            context.startActivity(intentShareApp);
+            activity.startActivity(intentShareApp);
         } catch (ActivityNotFoundException e) {
             String urlSocialMedia = "";
             switch (socialMedia) {
@@ -51,7 +55,40 @@ public class ShareSocialMedia {
                     break;
             }
             Intent intentShareWeb = new Intent(Intent.ACTION_VIEW, Uri.parse(urlSocialMedia));
-            context.startActivity(intentShareWeb);
+            activity.startActivity(intentShareWeb);
         }
+    }
+
+    public static void onShare(Activity activity, String url) {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_SEND);
+        intent.putExtra(Intent.EXTRA_TEXT, url);
+        intent.setType("text/plain");
+        activity.startActivity(Intent.createChooser(intent, activity.getResources().getText(R.string.share_via)));
+    }
+
+    public static void initShareLayout(final Activity activity, final String url) {
+        TextView viewShareFB = (TextView) activity.findViewById(R.id.share_fb);
+        TextView viewShareTwitter = (TextView) activity.findViewById(R.id.share_twitter);
+        TextView viewShareMore = (TextView) activity.findViewById(R.id.share_more);
+
+        viewShareFB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onShare(activity, url, SHARE_FB);
+            }
+        });
+        viewShareTwitter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onShare(activity, url, SHARE_TWITTER);
+            }
+        });
+        viewShareMore.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onShare(activity, url);
+            }
+        });
     }
 }

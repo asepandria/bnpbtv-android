@@ -1,5 +1,6 @@
 package tv.bnpbindonesia.app.adapter;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -20,6 +21,7 @@ import android.widget.TextView;
 import tv.bnpbindonesia.app.MainActivity;
 import tv.bnpbindonesia.app.R;
 import tv.bnpbindonesia.app.object.ItemMenu;
+import tv.bnpbindonesia.app.share.Config;
 import tv.bnpbindonesia.app.share.Function;
 import tv.bnpbindonesia.app.share.ShareSocialMedia;
 
@@ -115,23 +117,26 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             ViewHolderShare viewHolder = (ViewHolderShare) holder;
             ItemMenu itemMenu = itemMenus.get(position);
 
+            final String url = Config.URL_GOOGLE_PLAY + context.getPackageName();
+
             viewHolder.layout.setBackgroundColor(itemMenu.bg_color);
             viewHolder.viewFb.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ShareSocialMedia.onShare(context, "http://azkaku.com", ShareSocialMedia.SHARE_FB);
+//                    ShareSocialMedia.onShare((Activity) context,  url, ShareSocialMedia.SHARE_FB);
+                    ShareSocialMedia.onShare((Activity) context, "http://azkaku.com", ShareSocialMedia.SHARE_FB);
                 }
             });
             viewHolder.viewGplus.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ShareSocialMedia.onShare(context, "http://azkaku.com", ShareSocialMedia.SHARE_GPLUS);
+                    ShareSocialMedia.onShare((Activity) context, "http://azkaku.com", ShareSocialMedia.SHARE_GPLUS);
                 }
             });
             viewHolder.viewTwitter.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ShareSocialMedia.onShare(context, "http://azkaku.com", ShareSocialMedia.SHARE_TWITTER);
+                    ShareSocialMedia.onShare((Activity) context, "http://azkaku.com", ShareSocialMedia.SHARE_TWITTER);
                 }
             });
         }

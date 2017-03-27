@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import me.relex.circleindicator.CircleIndicator;
 import tv.bnpbindonesia.app.R;
 import tv.bnpbindonesia.app.adapter.ContentAdapter;
 import tv.bnpbindonesia.app.adapter.ImageAdapter;
@@ -46,6 +47,7 @@ import tv.bnpbindonesia.app.object.ItemObject;
 import tv.bnpbindonesia.app.object.Video;
 import tv.bnpbindonesia.app.share.Config;
 import tv.bnpbindonesia.app.share.Function;
+import tv.bnpbindonesia.app.share.ShareSocialMedia;
 import tv.bnpbindonesia.app.util.VolleySingleton;
 import tv.bnpbindonesia.app.util.VolleyStringRequest;
 
@@ -82,6 +84,7 @@ public class DetailAlertFragment extends Fragment {
     private TextView viewAlertType;
     private TextView viewAlertAddress;
     private ViewPager viewImages;
+    private CircleIndicator viewIndicator;
     private TextView viewType;
     private TextView viewDetail;
     private TextView viewTitle;
@@ -132,6 +135,7 @@ public class DetailAlertFragment extends Fragment {
         viewAlertType = (TextView) rootView.findViewById(R.id.alert_type);
         viewAlertAddress = (TextView) rootView.findViewById(R.id.alert_address);
         viewImages = (ViewPager) rootView.findViewById(R.id.images);
+        viewIndicator = (CircleIndicator) rootView.findViewById(R.id.indicator);
         viewType = (TextView) rootView.findViewById(R.id.type);
         viewDetail = (TextView) rootView.findViewById(R.id.detail);
         viewTitle = (TextView) rootView.findViewById(R.id.title);
@@ -159,6 +163,8 @@ public class DetailAlertFragment extends Fragment {
         viewImages.getLayoutParams().height = displayMetrics.widthPixels * 9 / 16;
         viewImages.requestLayout();
         viewImages.setAdapter(adapter);
+        viewIndicator.setViewPager(viewImages);
+        adapter.registerDataSetObserver(viewIndicator.getDataSetObserver());
         viewRetry.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -280,7 +286,9 @@ public class DetailAlertFragment extends Fragment {
             images = alert.slider.image;
             adapter = new ImageAdapter(getFragmentManager(), images);
             viewImages.setAdapter(adapter);
-//            adapter.notifyDataSetChanged();
+            viewIndicator.setViewPager(viewImages);
+            adapter.registerDataSetObserver(viewIndicator.getDataSetObserver());
+            ShareSocialMedia.initShareLayout(getActivity(), "http://azkaku.com");
         } else {
             viewImages.setVisibility(View.GONE);
         }
