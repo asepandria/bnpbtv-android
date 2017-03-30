@@ -15,10 +15,11 @@ public class Video implements Serializable {
     public String description;
     public String description_EN;
     public String aktivasi;
+    public String short_url;
 
     public Video (String id, String idvideo, String category, String judul, String judul_EN,
                   String tanggal, String image, String video, String youtube, String description,
-                  String description_EN, String aktivasi) {
+                  String description_EN, String aktivasi, String short_url) {
         this.id = id;
         this.idvideo = idvideo;
         this.category = category;
@@ -31,5 +32,6 @@ public class Video implements Serializable {
         this.description = description;
         this.description_EN = description_EN;
         this.aktivasi = aktivasi;
+        this.short_url = short_url;
     }
 }

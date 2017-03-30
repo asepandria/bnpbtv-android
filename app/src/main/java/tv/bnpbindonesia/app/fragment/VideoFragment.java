@@ -438,7 +438,7 @@ public class VideoFragment extends Fragment {
     }
 
     @Override
-    public void      onStop() {
+    public void onStop() {
         super.onStop();
 
         if (!video.video.isEmpty() && !video.video.contains(Config.YOUTUBE) && viewVideo != null) {
@@ -593,7 +593,7 @@ public class VideoFragment extends Fragment {
             switchLayout(LAYOUT_CONTENT, null);
             startVideo();
             startYoutube();
-            ShareSocialMedia.initShareLayout(getActivity(), "http://azkaku.com");
+            ShareSocialMedia.initShareLayout(getActivity(), video.short_url);
         }
 
         if (lastSize < datas.size()) {

@@ -288,7 +288,7 @@ public class DetailAlertFragment extends Fragment {
             viewImages.setAdapter(adapter);
             viewIndicator.setViewPager(viewImages);
             adapter.registerDataSetObserver(viewIndicator.getDataSetObserver());
-            ShareSocialMedia.initShareLayout(getActivity(), "http://azkaku.com");
+            ShareSocialMedia.initShareLayout(getActivity(), alert.short_url);
         } else {
             viewImages.setVisibility(View.GONE);
         }
