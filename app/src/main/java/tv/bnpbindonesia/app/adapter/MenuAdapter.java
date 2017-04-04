@@ -123,20 +123,19 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             viewHolder.viewFb.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-//                    ShareSocialMedia.onShare((Activity) context,  url, ShareSocialMedia.SHARE_FB);
-                    ShareSocialMedia.onShare((Activity) context, "http://azkaku.com", ShareSocialMedia.SHARE_FB);
+                    ShareSocialMedia.onShare((Activity) context,  url, ShareSocialMedia.SHARE_FB);
                 }
             });
             viewHolder.viewGplus.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ShareSocialMedia.onShare((Activity) context, "http://azkaku.com", ShareSocialMedia.SHARE_GPLUS);
+                    ShareSocialMedia.onShare((Activity) context, url, ShareSocialMedia.SHARE_GPLUS);
                 }
             });
             viewHolder.viewTwitter.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ShareSocialMedia.onShare((Activity) context, "http://azkaku.com", ShareSocialMedia.SHARE_TWITTER);
+                    ShareSocialMedia.onShare((Activity) context, url, ShareSocialMedia.SHARE_TWITTER);
                 }
             });
         }
