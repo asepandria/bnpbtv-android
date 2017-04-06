@@ -42,6 +42,7 @@ import tv.bnpbindonesia.app.fragment.ErrorFragment;
 import tv.bnpbindonesia.app.fragment.HomeFragment;
 import tv.bnpbindonesia.app.fragment.IndexFragment;
 import tv.bnpbindonesia.app.fragment.LoadingFragment;
+import tv.bnpbindonesia.app.fragment.ProfileFragment;
 import tv.bnpbindonesia.app.fragment.VideoFragment;
 import tv.bnpbindonesia.app.gson.GsonMenu;
 import tv.bnpbindonesia.app.object.Alert;
@@ -233,8 +234,16 @@ public class MainActivity extends AppCompatActivity {
 
         String menu = itemMenus.get(position).title;
         if (!fragments.containsKey(menu)) {
-            fragments.put(menu, position == 0 ? (isAlert ? AlertFragment.newInstance() : HomeFragment.newInstance()) : IndexFragment.newInstance(false, menu));
-//            fragments.put(menu, position == 0 ? (AlertFragment.newInstance()) : IndexFragment.newInstance(false, menu));
+            switch (position) {
+                case 0:
+                    fragments.put(menu,  isAlert ? AlertFragment.newInstance() : HomeFragment.newInstance());
+                    break;
+                case 1:
+                    fragments.put(menu,  ProfileFragment.newInstance());
+                    break;
+                default:
+                    fragments.put(menu,  IndexFragment.newInstance(false, menu));
+            }
         }
         fragmentStacks.add(fragments.get(menu));
         switchFragment(

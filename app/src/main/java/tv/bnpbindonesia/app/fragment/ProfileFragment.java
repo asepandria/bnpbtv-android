@@ -43,31 +43,24 @@ import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 import tv.bnpbindonesia.app.MainActivity;
 import tv.bnpbindonesia.app.R;
 import tv.bnpbindonesia.app.adapter.ContentAdapter;
-import tv.bnpbindonesia.app.gson.GsonVideo;
 import tv.bnpbindonesia.app.object.ItemObject;
-import tv.bnpbindonesia.app.object.Video;
+import tv.bnpbindonesia.app.object.Profile;
 import tv.bnpbindonesia.app.share.Config;
 import tv.bnpbindonesia.app.share.Function;
-import tv.bnpbindonesia.app.share.ShareSocialMedia;
 import tv.bnpbindonesia.app.util.VolleySingleton;
 import tv.bnpbindonesia.app.util.VolleyStringRequest;
 
-public class VideoFragment extends Fragment {
-    private static final String TAG = VideoFragment.class.getSimpleName();
-    private static final String TAG_VIDEO = "video";
-    private static final String TAG_VIDEOS = "videos";
+public class ProfileFragment extends Fragment {
+    private static final String TAG = ProfileFragment.class.getSimpleName();
+    private static final String TAG_PROFILE = "profile";
 
-    private static final String ARG_ID = "id";
-    private static final String ARG_VIDEO = "video";
 
-    private static final int STATE_REQUEST_VIDEO = -2;
-    private static final int STATE_REQUEST_VIDEOS = -1;
+    private static final int STATE_REQUEST_PROFILE = -1;
     private static final int STATE_DONE = 0;
 
     private static final int RECOVERY_DIALOG_REQUEST = 1;
@@ -83,13 +76,11 @@ public class VideoFragment extends Fragment {
     private static final int HANDLER_VIDEO_PROGRESS = 0;
     private static final int HANDLER_VIDEO_CONTROLLER_HIDE = 1;
 
-    private int state = STATE_REQUEST_VIDEO;
+    private int state = STATE_REQUEST_PROFILE;
     private int videoLayout = VIDEO_LAYOUT_LOADING;
 
-    private String id;
-    private Video video;
+    private Profile profile;
 
-    private int currentPage;
     private ArrayList<ItemObject> datas = new ArrayList<>();
 
     private DisplayMetrics displayMetrics;
@@ -120,15 +111,13 @@ public class VideoFragment extends Fragment {
     private TextView viewErrorMessage;
     private Button viewRetry;
 
-    public VideoFragment() {
+    public ProfileFragment() {
         // Required empty public constructor
     }
 
-    public static VideoFragment newInstance(String id, Video video) {
-        VideoFragment fragment = new VideoFragment();
+    public static ProfileFragment newInstance() {
+        ProfileFragment fragment = new ProfileFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_ID, id);
-        args.putSerializable(ARG_VIDEO, video);
         fragment.setArguments(args);
 
         return fragment;
@@ -137,12 +126,6 @@ public class VideoFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if (getArguments() != null) {
-            id = getArguments().getString(ARG_ID);
-            video = (Video) getArguments().getSerializable(ARG_VIDEO);
-        }
-        state = video == null ? STATE_REQUEST_VIDEO : STATE_REQUEST_VIDEOS;
 
         displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -198,7 +181,7 @@ public class VideoFragment extends Fragment {
                 if (!wasRestored) {
                     youTubeplayer = player;
 //                        player.cueVideo(youtube);
-                    player.loadVideo(video.youtube);
+                    player.loadVideo(profile.youtube);
                 }
             }
 
@@ -237,7 +220,7 @@ public class VideoFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_video, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_profile, container, false);
 
         layoutContent = (LinearLayout) rootView.findViewById(R.id.layout_content);
         layoutYoutube = (FrameLayout) rootView.findViewById(R.id.layout_youtube);
@@ -380,30 +363,11 @@ public class VideoFragment extends Fragment {
         });
         viewVideos.setLayoutManager(layoutManager);
         viewVideos.setAdapter(adapter);
-        viewVideos.getRecycledViewPool().setMaxRecycledViews(ContentAdapter.TYPE_PREVIEW_IMAGE, 0);
-        viewVideos.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                int lastView = ((GridLayoutManager) recyclerView.getLayoutManager()).findLastVisibleItemPosition();
-                if (lastView > -1 && lastView < datas.size()) {
-                    if (datas.get(lastView).type == ContentAdapter.TYPE_STATE_ERROR || datas.get(lastView).type == ContentAdapter.TYPE_STATE_IDLE) {
-                        recyclerView.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                startRequestVideos(true);
-                            }
-                        });
-                    }
-                }
-            }
-        });
         viewRetry.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (state == STATE_REQUEST_VIDEO) {
-                    startRequestVideo();
-                } else if (state == STATE_REQUEST_VIDEOS) {
-                    startRequestVideos(false);
+                if (state == STATE_REQUEST_PROFILE) {
+                    startRequestProfile();
                 }
             }
         });
@@ -412,10 +376,8 @@ public class VideoFragment extends Fragment {
         layoutLoading.setVisibility(View.GONE);
         layoutError.setVisibility(View.GONE);
 
-        if (state == STATE_REQUEST_VIDEO) {
-            startRequestVideo();
-        } else if (state == STATE_REQUEST_VIDEOS) {
-            startRequestVideos(false);
+        if (state == STATE_REQUEST_PROFILE) {
+            startRequestProfile();
         } else if (state == STATE_DONE) {
             switchLayout(LAYOUT_CONTENT, null);
             startVideo();
@@ -427,11 +389,11 @@ public class VideoFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
-        if (video != null) {
-            if (video.video != null && !video.video.isEmpty() && !video.video.contains(Config.YOUTUBE) && viewVideo != null) {
+        if (profile != null) {
+            if (profile.video != null && !profile.video.isEmpty() && !profile.video.contains(Config.YOUTUBE) && viewVideo != null) {
                 viewVideo.start();
             }
-            if (video.youtube != null && !video.youtube.isEmpty() && youTubeplayer != null) {
+            if (profile.youtube != null && !profile.youtube.isEmpty() && youTubeplayer != null) {
                 youTubeplayer.play();
             }
         }
@@ -441,18 +403,17 @@ public class VideoFragment extends Fragment {
     public void onStop() {
         super.onStop();
 
-        if (video != null) {
-            if (video.video != null && !video.video.isEmpty() && !video.video.contains(Config.YOUTUBE) && viewVideo != null) {
+        if (profile != null) {
+            if (profile.video != null && !profile.video.isEmpty() && !profile.video.contains(Config.YOUTUBE) && viewVideo != null) {
                 viewVideo.pause();
                 handlerVideo.removeMessages(HANDLER_VIDEO_PROGRESS);
             }
-            if (video.youtube != null && !video.youtube.isEmpty() && youTubeplayer != null) {
+            if (profile.youtube != null && !profile.youtube.isEmpty() && youTubeplayer != null) {
                 youTubeplayer.pause();
             }
         }
 
-        VolleySingleton.getInstance(getActivity()).cancelPendingRequests(TAG_VIDEO);
-        VolleySingleton.getInstance(getActivity()).cancelPendingRequests(TAG_VIDEOS);
+        VolleySingleton.getInstance(getActivity()).cancelPendingRequests(TAG_PROFILE);
     }
 
     @Override
@@ -547,63 +508,33 @@ public class VideoFragment extends Fragment {
     }
 
     private void startVideo() {
-        if (video.video != null && !video.video.isEmpty() && !video.video.contains(Config.YOUTUBE)) {
+        if (profile.video != null && !profile.video.isEmpty() && !profile.video.contains(Config.YOUTUBE)) {
             layoutVideo.setVisibility(View.VISIBLE);
             switchVideoLayout(VIDEO_LAYOUT_LOADING);
-            viewVideo.setVideoURI(Uri.parse(video.video));
+            viewVideo.setVideoURI(Uri.parse(profile.video));
         }
     }
 
     private void startYoutube() {
-        if (video.youtube != null && !video.youtube.isEmpty()) {
+        if (profile.youtube != null && !profile.youtube.isEmpty()) {
             layoutYoutube.setVisibility(View.VISIBLE);
             viewYoutubePlayer.initialize(Config.YOUTUBE_API_KEY, onInitializedListener);
         }
     }
 
-    private void fillData(boolean isLoadMore, int totalPage, int currentPage, ArrayList<Video> videos) {
-        this.currentPage = currentPage;
+    private void fillData() {
+        datas.clear();
 
-        if (isLoadMore) {
-            datas.remove(datas.size() - 1);
-            adapter.notifyItemRemoved(datas.size());
-        } else {
-            datas.clear();
-            adapter.notifyDataSetChanged();
+        datas.add(new ItemObject(ContentAdapter.TYPE_HEADER, profile.title));
+        datas.add(new ItemObject(ContentAdapter.TYPE_DESCRIPTION, profile.desc));
+        adapter.notifyDataSetChanged();
 
-            String lang = Locale.getDefault().getLanguage();
-            datas.add(new ItemObject(ContentAdapter.TYPE_HEADER, lang.equals(Config.LANGUANGE_INDONESIA) ? video.judul : video.judul_EN));
-            datas.add(new ItemObject(ContentAdapter.TYPE_DESCRIPTION, lang.equals(Config.LANGUANGE_INDONESIA) ? video.description : video.description_EN));
-            datas.add(new ItemObject(ContentAdapter.TYPE_HEADER, "Related Videos"));
-        }
-
-        int lastSize = datas.size();
-
-        if (videos != null) {
-            for (Video video : videos) {
-                datas.add(new ItemObject(ContentAdapter.TYPE_PREVIEW_IMAGE, video));
-            }
-        }
-
-        if (datas.size() == 0) {
-            datas.add(new ItemObject(ContentAdapter.TYPE_HEADER, null));
-        } else if (totalPage != currentPage) {
-            datas.add(new ItemObject(ContentAdapter.TYPE_STATE_IDLE, null));
-        }
-
-        if (!isLoadMore) {
-            switchLayout(LAYOUT_CONTENT, null);
-            startVideo();
-            startYoutube();
-            ShareSocialMedia.initShareLayout(getActivity(), video.short_url);
-        }
-
-        if (lastSize < datas.size()) {
-            adapter.notifyItemRangeInserted(lastSize, datas.size() - lastSize);
-        }
+        switchLayout(LAYOUT_CONTENT, null);
+        startVideo();
+        startYoutube();
     }
 
-    private void startRequestVideo() {
+    private void startRequestProfile() {
         switchLayout(LAYOUT_LOADING, null);
 
         VolleyStringRequest request = new VolleyStringRequest(
@@ -614,16 +545,10 @@ public class VideoFragment extends Fragment {
                     public void onResponse(String response) {
                         Gson gson = new GsonBuilder().create();
                         try {
-                            GsonVideo gsonVideo = gson.fromJson(response, GsonVideo.class);
-                            if (gsonVideo.video != null) {
-                                for (Video vid : gsonVideo.video) {
-                                    video = vid;
-                                    break;
-                                }
-                            }
+                            profile = gson.fromJson(response, Profile.class);
+                            fillData();
 
-                            state = STATE_REQUEST_VIDEOS;
-                            startRequestVideos(false);
+                            state = STATE_DONE;
                         } catch (Exception e) {
                             switchLayout(LAYOUT_ERROR, getString(R.string.json_format_error));
                         }
@@ -639,75 +564,11 @@ public class VideoFragment extends Fragment {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> params = new HashMap<>();
-                params.put("function", "video");
-                params.put("id", id);
+                params.put("function", "profil");
                 return params;
             }
         };
-        VolleySingleton.getInstance(getActivity()).cancelPendingRequests(TAG_VIDEO);
-        VolleySingleton.getInstance(getActivity()).addToRequestQueue(request, TAG_VIDEO);
-    }
-
-    public void startRequestVideos(final boolean isLoadMore) {
-        if (isLoadMore) {
-            datas.remove(datas.size() - 1);
-            datas.add(new ItemObject(ContentAdapter.TYPE_STATE_LOADING, null));
-            adapter.notifyItemChanged(datas.size() - 1);
-        } else {
-            datas.clear();
-            adapter.notifyDataSetChanged();
-            switchLayout(LAYOUT_LOADING, null);
-        }
-
-        VolleyStringRequest request = new VolleyStringRequest(
-                Request.Method.POST,
-                Config.URL_BASE,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        Gson gson = new GsonBuilder().create();
-                        try {
-                            GsonVideo gsonVideo = gson.fromJson(response, GsonVideo.class);
-                            fillData(isLoadMore, gsonVideo.total_page, gsonVideo.current_page, gsonVideo.video);
-
-                            state = STATE_DONE;
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            if (isLoadMore) {
-                                datas.remove(datas.size() - 1);
-                                datas.add(new ItemObject(ContentAdapter.TYPE_STATE_ERROR, getString(R.string.json_format_error)));
-                                adapter.notifyItemChanged(datas.size() - 1);
-                            } else {
-                                switchLayout(LAYOUT_ERROR, getString(R.string.json_format_error));
-                            }
-                        }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        if (isLoadMore) {
-                            datas.remove(datas.size() - 1);
-                            datas.add(new ItemObject(ContentAdapter.TYPE_STATE_ERROR, Function.parseVolleyError(getActivity(), error)));
-                            adapter.notifyItemChanged(datas.size() - 1);
-                        } else {
-                            switchLayout(LAYOUT_ERROR, Function.parseVolleyError(getActivity(), error));
-                        }
-                    }
-                }
-        ) {
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> params = new HashMap<>();
-                params.put("function", "video");
-                if (isLoadMore) {
-                    params.put("page", String.valueOf(currentPage + 1));
-                    params.put("category", video.category);
-                }
-                return params;
-            }
-        };
-        VolleySingleton.getInstance(getActivity()).cancelPendingRequests(TAG_VIDEOS);
-        VolleySingleton.getInstance(getActivity()).addToRequestQueue(request, TAG_VIDEOS);
+        VolleySingleton.getInstance(getActivity()).cancelPendingRequests(TAG_PROFILE);
+        VolleySingleton.getInstance(getActivity()).addToRequestQueue(request, TAG_PROFILE);
     }
 }
