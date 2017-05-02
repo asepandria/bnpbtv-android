@@ -20,9 +20,11 @@ import tv.bnpbindonesia.app.fragment.AlertFragment;
 import tv.bnpbindonesia.app.fragment.HomeFragment;
 import tv.bnpbindonesia.app.fragment.IndexFragment;
 import tv.bnpbindonesia.app.fragment.VideoFragment;
+import tv.bnpbindonesia.app.object.Alert;
 import tv.bnpbindonesia.app.object.ItemObject;
 import tv.bnpbindonesia.app.object.Video;
 import tv.bnpbindonesia.app.share.Config;
+import tv.bnpbindonesia.app.share.Function;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -38,10 +40,12 @@ public class ContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public static final int TYPE_STATE_ERROR = -1;
     public static final int TYPE_STATE_LOADING = 0;
     public static final int TYPE_STATE_IDLE = 1;
-    public static final int TYPE_HEADER = 2;
-    public static final int TYPE_DESCRIPTION = 3;
-    public static final int TYPE_PREVIEW_IMAGE = 4;
-    public static final int TYPE_PREVIEW_DESCRIPTION = 5;
+    public static final int TYPE_LANGUAGE = 2;
+    public static final int TYPE_HEADER = 3;
+    public static final int TYPE_DESCRIPTION = 4;
+    public static final int TYPE_PREVIEW_IMAGE = 5;
+    public static final int TYPE_PREVIEW_DESCRIPTION = 6;
+    public static final int TYPE_ALERT = 7;
 
     private String lang = Locale.getDefault().getLanguage();
     private Context context;
@@ -82,6 +86,9 @@ public class ContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         } else if (viewType == TYPE_STATE_IDLE) {
             View view = LayoutInflater.from(context).inflate(R.layout.item_state_idle, parent, false);
             return new ViewHolderStateIdle(view);
+        } else if (viewType == TYPE_LANGUAGE) {
+            View view = LayoutInflater.from(context).inflate(R.layout.item_lang, parent, false);
+            return new ViewHolderLanguage(view);
         } else if (viewType == TYPE_HEADER) {
             View view = LayoutInflater.from(context).inflate(R.layout.item_header, parent, false);
             return new ViewHolderText(view);
@@ -96,6 +103,9 @@ public class ContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             View view = LayoutInflater.from(context).inflate(R.layout.item_preview_description, parent, false);
 //            view.getLayoutParams().height = displayMetrics.widthPixels * 9 / 16;
             return new ViewHolderPreviewDescription(view);
+        } else if (viewType == TYPE_ALERT) {
+            View view = LayoutInflater.from(context).inflate(R.layout.item_alert, parent, false);
+            return new ViewHolderPreviewImage(view);
         } else {
             return null;
         }
@@ -141,6 +151,31 @@ public class ContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                     }
                 }
             });
+        } else if (viewType == TYPE_LANGUAGE) {
+            String lang = Function.getLang(context);
+
+            ViewHolderLanguage viewHolder = (ViewHolderLanguage) holder;
+
+            viewHolder.viewIn.setTextColor(Color.parseColor(lang.equals(Config.LANGUANGE_INDONESIA) ? "#505050" : "#a4a4a4"));
+            viewHolder.viewIn.setBackgroundColor(Color.parseColor(lang.equals(Config.LANGUANGE_INDONESIA) ? "#f0f0f0" : "#ffffff"));
+            viewHolder.viewIn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (fragment instanceof VideoFragment) {
+                        ((VideoFragment) fragment).initLanguage(Config.LANGUANGE_INDONESIA);
+                    }
+                }
+            });
+            viewHolder.viewEn.setTextColor(Color.parseColor(!lang.equals(Config.LANGUANGE_INDONESIA) ? "#505050" : "#a4a4a4"));
+            viewHolder.viewEn.setBackgroundColor(Color.parseColor(!lang.equals(Config.LANGUANGE_INDONESIA) ? "#f0f0f0" : "#ffffff"));
+            viewHolder.viewEn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (fragment instanceof VideoFragment) {
+                        ((VideoFragment) fragment).initLanguage(Config.LANGUANGE_ENGLISH);
+                    }
+                }
+            });
         } else if (viewType == TYPE_HEADER) {
             ViewHolderText viewHolder = (ViewHolderText) holder;
             String title = (String) datas.get(position).object;
@@ -160,7 +195,7 @@ public class ContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 viewHolder.viewImage.setTag(video.image);
             }
             viewHolder.viewTitle.setText(lang.equals(Config.LANGUANGE_INDONESIA) ? video.judul : video.judul_EN);
-            viewHolder.viewDescription.setText(lang.equals(Config.LANGUANGE_INDONESIA) ? video.description : video.description_EN);
+            viewHolder.viewDescription.setText(lang.equals(Config.LANGUANGE_INDONESIA) ? video.summary : video.summary_EN);
             viewHolder.viewLayer.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -174,11 +209,28 @@ public class ContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             viewHolder.layout.setBackgroundColor(Color.parseColor((position + 1) % 4 == 0 ? "#ec8304" : "#024b98"));
             viewHolder.viewMore.setBackgroundColor(Color.parseColor((position + 1) % 4 == 0 ? "#fe8e04" : "#03438a"));
             viewHolder.viewTitle.setText(lang.equals(Config.LANGUANGE_INDONESIA) ? video.judul : video.judul_EN);
-            viewHolder.viewDescription.setText(lang.equals(Config.LANGUANGE_INDONESIA) ? video.description : video.description_EN);
+            viewHolder.viewDescription.setText(lang.equals(Config.LANGUANGE_INDONESIA) ? video.summary : video.summary_EN);
             viewHolder.viewLayer.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     ((MainActivity) context).onSelectVideo(video);
+                }
+            });
+        } else if (viewType == TYPE_ALERT) {
+            ViewHolderPreviewImage viewHolder = (ViewHolderPreviewImage) holder;
+            final Alert alert = (Alert) datas.get(position).object;
+
+            String image = alert.slider.image.get(0);
+            if (viewHolder.viewImage.getTag() == null || !viewHolder.viewImage.getTag().equals(image)) {
+                ImageLoader.getInstance().displayImage(image, viewHolder.viewImage, options);
+                viewHolder.viewImage.setTag(image);
+            }
+            viewHolder.viewTitle.setText(alert.title);
+            viewHolder.viewDescription.setText(alert.address);
+            viewHolder.viewLayer.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    ((MainActivity) context).onSelectAlert(alert);
                 }
             });
         }
@@ -230,6 +282,18 @@ public class ContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             super(view);
 
             viewText = (TextView) view.findViewById(R.id.text);
+        }
+    }
+
+    private static class ViewHolderLanguage extends RecyclerView.ViewHolder {
+        public TextView viewIn;
+        public TextView viewEn;
+
+        public ViewHolderLanguage(View view) {
+            super(view);
+
+            viewIn = (TextView) view.findViewById(R.id.in);
+            viewEn = (TextView) view.findViewById(R.id.en);
         }
     }
 

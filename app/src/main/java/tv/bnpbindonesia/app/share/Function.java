@@ -1,6 +1,10 @@
 package tv.bnpbindonesia.app.share;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+import android.support.v4.content.SharedPreferencesCompat;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Log;
@@ -14,6 +18,7 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -70,7 +75,6 @@ public class Function {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
         }
 
         return position;
@@ -85,5 +89,18 @@ public class Function {
             result = Html.fromHtml(html);
         }
         return result;
+    }
+
+    public static String getLang(Context context) {
+        String lang = Locale.getDefault().getLanguage();
+        SharedPreferences prefs = context.getSharedPreferences(context.getPackageName(), Activity.MODE_PRIVATE);
+        return prefs.getString("lang", lang);
+    }
+
+    public static void setLang(Context context, String lang) {
+        SharedPreferences prefs = context.getSharedPreferences(context.getPackageName(), Activity.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("lang", lang);
+        editor.apply();
     }
 }

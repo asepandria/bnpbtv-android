@@ -11,6 +11,7 @@ import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.support.v4.view.GravityCompat;
@@ -26,6 +27,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.volley.AuthFailureError;
@@ -37,6 +39,8 @@ import com.google.gson.GsonBuilder;
 
 import tv.bnpbindonesia.app.adapter.MenuAdapter;
 import tv.bnpbindonesia.app.fragment.AlertFragment;
+import tv.bnpbindonesia.app.fragment.AlertHistoryFragment;
+import tv.bnpbindonesia.app.fragment.ContactFragment;
 import tv.bnpbindonesia.app.fragment.DetailAlertFragment;
 import tv.bnpbindonesia.app.fragment.ErrorFragment;
 import tv.bnpbindonesia.app.fragment.HomeFragment;
@@ -82,8 +86,10 @@ public class MainActivity extends AppCompatActivity {
     private MenuAdapter menuAdapter;
 
     private Toolbar toolbar;
+    private ImageView toolbarLogo;
     private DrawerLayout drawer;
-    private EditText viewSearch;
+    private EditText viewKeyword;
+    private ImageView viewSearch;
     private RecyclerView viewMenus;
 
     public static Intent newInstance(Context context, boolean isAlert) {
@@ -102,7 +108,6 @@ public class MainActivity extends AppCompatActivity {
             if (extra.hasExtra(EXTRA_IS_ALERT)) isAlert = extra.getBooleanExtra(EXTRA_IS_ALERT, false);
         }
 
-
         fragments.put(ACTION_LOADING, LoadingFragment.newInstance());
 
         displayMetrics = new DisplayMetrics();
@@ -113,8 +118,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbarLogo = (ImageView) findViewById(R.id.toolbar_logo);
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        viewSearch = (EditText) findViewById(R.id.search);
+        viewKeyword = (EditText) findViewById(R.id.keyword);
+        viewSearch = (ImageView) findViewById(R.id.search);
         viewMenus = (RecyclerView) findViewById(R.id.menus);
 
         setSupportActionBar(toolbar);
@@ -126,13 +133,26 @@ public class MainActivity extends AppCompatActivity {
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        viewSearch.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        toolbarLogo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onSelectMenu(0);
+            }
+        });
+
+        viewKeyword.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                     search();
                 }
                 return false;
+            }
+        });
+        viewSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                search();
             }
         });
 
@@ -196,9 +216,9 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case R.id.action_search:
                 drawer.openDrawer(GravityCompat.START);
-                viewSearch.requestFocus();
+                viewKeyword.requestFocus();
                 InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                inputMethodManager.showSoftInput(viewSearch, InputMethodManager.SHOW_IMPLICIT);
+                inputMethodManager.showSoftInput(viewKeyword, InputMethodManager.SHOW_IMPLICIT);
                 return true;
         }
 
@@ -234,15 +254,16 @@ public class MainActivity extends AppCompatActivity {
 
         String menu = itemMenus.get(position).title;
         if (!fragments.containsKey(menu)) {
-            switch (position) {
-                case 0:
-                    fragments.put(menu,  isAlert ? AlertFragment.newInstance() : HomeFragment.newInstance());
-                    break;
-                case 1:
-                    fragments.put(menu,  ProfileFragment.newInstance());
-                    break;
-                default:
-                    fragments.put(menu,  IndexFragment.newInstance(false, menu));
+            if (position == 0) {
+                fragments.put(menu, isAlert ? AlertFragment.newInstance() : HomeFragment.newInstance());
+            } else  if (position == 1) {
+                fragments.put(menu, ProfileFragment.newInstance());
+            } else if (position == itemMenus.size() - 3) {
+                fragments.put(menu, AlertHistoryFragment.newInstance(itemMenus.get(position).title.toUpperCase()));
+            } else if (position == itemMenus.size() - 2) {
+                fragments.put(menu, ContactFragment.newInstance(itemMenus.get(position).title.toUpperCase()));
+            } else {
+                fragments.put(menu,  IndexFragment.newInstance(false, menu));
             }
         }
         fragmentStacks.add(fragments.get(menu));
@@ -298,14 +319,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void search() {
         drawer.closeDrawer(GravityCompat.START);
-        viewSearch.clearFocus();
+        viewKeyword.clearFocus();
         InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputMethodManager.hideSoftInputFromWindow(viewSearch.getWindowToken(), 0);
+        inputMethodManager.hideSoftInputFromWindow(viewKeyword.getWindowToken(), 0);
 
         selectedMenu = -1;
         fragmentStacks.clear();
 
-        Fragment fragment = IndexFragment.newInstance(true, viewSearch.getText().toString());
+        Fragment fragment = IndexFragment.newInstance(true, viewKeyword.getText().toString());
         fragmentStacks.add(fragment);
         switchFragment(
                 fragment,

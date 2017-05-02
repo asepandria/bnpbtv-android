@@ -185,6 +185,7 @@ public class DetailAlertFragment extends Fragment {
         }
     }
 
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -313,7 +314,7 @@ public class DetailAlertFragment extends Fragment {
                         Gson gson = new GsonBuilder().create();
                         try {
                             GsonAlert gsonAlert = gson.fromJson(response, GsonAlert.class);
-                            alert = gsonAlert.items;
+                            alert = gsonAlert.items.get(0);
                             fillContent();
 
                             state = STATE_DONE;
@@ -332,7 +333,8 @@ public class DetailAlertFragment extends Fragment {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> params = new HashMap<>();
-                params.put("function", "alert");
+//                params.put("function", "alert");
+                params.put("function", "arsip_bencana");
                 params.put("id", id);
                 return params;
             }

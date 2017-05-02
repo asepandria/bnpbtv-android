@@ -6,7 +6,6 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +21,7 @@ import com.android.volley.VolleyError;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -95,6 +95,8 @@ public class AlertFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        MapsInitializer.initialize(getContext());
 
         displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -284,6 +286,8 @@ public class AlertFragment extends Fragment {
         viewMap.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap googleMap) {
+                MapsInitializer.initialize(getContext());
+
                 googleMap.clear();
 //                    googleMap.getUiSettings().setAllGesturesEnabled(false);
                 LatLng position = Function.getLatLng(alert.googlemaps);
@@ -348,12 +352,11 @@ public class AlertFragment extends Fragment {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        Log.e(TAG, response);
                         Gson gson = new GsonBuilder().create();
                         try {
                             GsonAlert gsonAlert = gson.fromJson(response, GsonAlert.class);
-                            alert = gsonAlert.items;
-Log.e(TAG, "alert.slider.image.size()=" + alert.slider.image.size());
+                            alert = gsonAlert.items.get(0);
+
                             state = STATE_REQUEST_VIDEOS;
                             startRequestVideos(false);
                         } catch (Exception e) {

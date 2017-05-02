@@ -15,6 +15,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Surface;
@@ -223,6 +224,7 @@ public class VideoFragment extends Fragment {
                     case ContentAdapter.TYPE_STATE_ERROR:
                     case ContentAdapter.TYPE_STATE_LOADING:
                     case ContentAdapter.TYPE_STATE_IDLE:
+                    case ContentAdapter.TYPE_LANGUAGE:
                     case ContentAdapter.TYPE_HEADER:
                     case ContentAdapter.TYPE_DESCRIPTION:
                         return 2;
@@ -561,6 +563,22 @@ public class VideoFragment extends Fragment {
         }
     }
 
+    public void initLanguage(String lang) {
+        if (lang != null) {
+            Function.setLang(getContext(), lang);
+            ItemObject header = datas.get(1);
+            header.object = lang.equals(Config.LANGUANGE_INDONESIA) ? video.judul : video.judul_EN;
+            ItemObject description = datas.get(2);
+            description.object = lang.equals(Config.LANGUANGE_INDONESIA) ? video.description : video.description_EN;
+            adapter.notifyItemRangeChanged(0, 3);
+        } else {
+            lang = Function.getLang(getContext());
+            datas.add(new ItemObject(ContentAdapter.TYPE_LANGUAGE, null));
+            datas.add(new ItemObject(ContentAdapter.TYPE_HEADER, lang.equals(Config.LANGUANGE_INDONESIA) ? video.judul : video.judul_EN));
+            datas.add(new ItemObject(ContentAdapter.TYPE_DESCRIPTION, lang.equals(Config.LANGUANGE_INDONESIA) ? video.description : video.description_EN));
+        }
+    }
+
     private void fillData(boolean isLoadMore, int totalPage, int currentPage, ArrayList<Video> videos) {
         this.currentPage = currentPage;
 
@@ -571,9 +589,11 @@ public class VideoFragment extends Fragment {
             datas.clear();
             adapter.notifyDataSetChanged();
 
-            String lang = Locale.getDefault().getLanguage();
-            datas.add(new ItemObject(ContentAdapter.TYPE_HEADER, lang.equals(Config.LANGUANGE_INDONESIA) ? video.judul : video.judul_EN));
-            datas.add(new ItemObject(ContentAdapter.TYPE_DESCRIPTION, lang.equals(Config.LANGUANGE_INDONESIA) ? video.description : video.description_EN));
+//            String lang = Locale.getDefault().getLanguage();
+//            String lang = Function.getLang(getContext());
+//            datas.add(new ItemObject(ContentAdapter.TYPE_HEADER, lang.equals(Config.LANGUANGE_INDONESIA) ? video.judul : video.judul_EN));
+//            datas.add(new ItemObject(ContentAdapter.TYPE_DESCRIPTION, lang.equals(Config.LANGUANGE_INDONESIA) ? video.description : video.description_EN));
+            initLanguage(null);
             datas.add(new ItemObject(ContentAdapter.TYPE_HEADER, "Related Videos"));
         }
 

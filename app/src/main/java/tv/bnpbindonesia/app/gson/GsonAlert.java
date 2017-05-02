@@ -6,7 +6,7 @@ import tv.bnpbindonesia.app.object.Alert;
 import tv.bnpbindonesia.app.object.Headline;
 
 public class GsonAlert {
-    public Alert items;
+    public ArrayList<Alert> items;
 
     public GsonAlert() {}
 }

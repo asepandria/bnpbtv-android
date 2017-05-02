@@ -6,4 +6,5 @@
 
     <color name="menu_bg1">#ebebed</color>
     <color name="menu_bg2">#f4f4f6</color>
+    <color name="list_bg">#f5f5f5</color>
 </resources>

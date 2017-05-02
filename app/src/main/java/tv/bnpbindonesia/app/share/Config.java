@@ -2,6 +2,7 @@ package tv.bnpbindonesia.app.share;
 
 public class Config {
     public static final String LANGUANGE_INDONESIA = "in";
+    public static final String LANGUANGE_ENGLISH = "en";
 
     public static final String YOUTUBE_API_KEY = "AIzaSyDmmKnHX_-hQfOOfHKHrnD0FQRJEVPlRnU";
 

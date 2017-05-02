@@ -13,8 +13,10 @@
         android:id="@+id/toolbar_logo"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="16dp"
+        android:padding="16dp"
         android:adjustViewBounds="true"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
         android:src="@drawable/logo"
         tools:ignore="ContentDescription" />
 </android.support.v7.widget.Toolbar>
