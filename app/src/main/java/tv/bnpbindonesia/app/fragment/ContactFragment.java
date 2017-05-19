@@ -38,6 +38,7 @@ import com.android.volley.VolleyError;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -169,6 +170,8 @@ public class ContactFragment extends Fragment {
         } else if (state == STATE_DONE) {
             switchLayout(LAYOUT_CONTENT, null);
         }
+
+        FirebaseAnalytics.getInstance(getActivity()).logEvent("screen_contact", null);
     }
 
     @Override

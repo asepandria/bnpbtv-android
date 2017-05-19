@@ -36,7 +36,6 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public static final int TYPE_SUB_MENU = 3;
     public static final int TYPE_SHARE = 4;
 
-    private int selected = 0;
     private Context context;
     private ArrayList<ItemMenu> itemMenus = new ArrayList<>();
 

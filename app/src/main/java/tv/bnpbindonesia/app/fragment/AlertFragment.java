@@ -26,6 +26,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -202,6 +203,8 @@ public class AlertFragment extends Fragment {
         } else if (state == STATE_DONE) {
             fillContent();
         }
+
+        FirebaseAnalytics.getInstance(getActivity()).logEvent("screen_alert", null);
     }
 
     @Override

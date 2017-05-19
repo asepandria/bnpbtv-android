@@ -38,6 +38,7 @@ import com.android.volley.VolleyError;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -416,6 +417,8 @@ public class HomeFragment extends Fragment {
             startVideo();
             startYoutube();
         }
+
+        FirebaseAnalytics.getInstance(getActivity()).logEvent("screen_home", null);
     }
 
     @Override

@@ -3,7 +3,6 @@ package tv.bnpbindonesia.app.adapter;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +20,6 @@ public class ImageAdapter extends FragmentStatePagerAdapter {
         super(fm);
 
         this.datas = datas;
-        Log.e(TAG, "datas.size()=" + datas.size());
     }
 
     @Override

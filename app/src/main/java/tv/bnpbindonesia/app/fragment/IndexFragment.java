@@ -18,6 +18,7 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -176,6 +177,8 @@ public class IndexFragment extends Fragment {
                 switchLayout(LAYOUT_CONTENT, null);
             }
         }
+
+        FirebaseAnalytics.getInstance(getActivity()).logEvent("screen_" + (isSearch ? "search" : "index_videos_" + key), null);
     }
 
     @Override

@@ -18,6 +18,7 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -174,6 +175,8 @@ public class AlertHistoryFragment extends Fragment {
                 switchLayout(LAYOUT_CONTENT, null);
             }
         }
+
+        FirebaseAnalytics.getInstance(getActivity()).logEvent("screen_alert_history", null);
     }
 
     @Override
