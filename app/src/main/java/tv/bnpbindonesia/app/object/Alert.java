@@ -15,10 +15,12 @@ public class Alert implements Serializable {
     public String wound;
     public String description;
     public String short_url;
+    public String latlong;
+    public String reported;
 
     public Alert(String id, String title, String type, String date, Slider slider, String address,
                  String googlemaps, String scale, String fatalities, String wound,
-                 String description, String short_url){
+                 String description, String short_url, String latlong, String reported){
         this.id = id;
         this.title = title;
         this.type = type;
@@ -31,5 +33,7 @@ public class Alert implements Serializable {
         this.wound = wound;
         this.description = description;
         this.short_url = short_url;
+        this.latlong = latlong;
+        this.reported = reported;
     }
 }

@@ -220,7 +220,8 @@ public class ContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             ViewHolderPreviewImage viewHolder = (ViewHolderPreviewImage) holder;
             final Alert alert = (Alert) datas.get(position).object;
 
-            String image = alert.slider.image.get(0);
+//            String image = alert.slider.image.get(0);
+            String image = alert.slider.image;
             if (viewHolder.viewImage.getTag() == null || !viewHolder.viewImage.getTag().equals(image)) {
                 ImageLoader.getInstance().displayImage(image, viewHolder.viewImage, options);
                 viewHolder.viewImage.setTag(image);

@@ -34,6 +34,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -271,7 +272,8 @@ public class DetailAlertFragment extends Fragment {
             @Override
             public void onMapReady(GoogleMap googleMap) {
                 googleMap.clear();
-                LatLng position = Function.getLatLng(alert.googlemaps);
+//                LatLng position = Function.getLatLng(alert.googlemaps);
+                LatLng position = Function.getLatLng(alert.latlong);
                 if (position != null) {
                     googleMap.addMarker(
                             new MarkerOptions()
@@ -285,10 +287,12 @@ public class DetailAlertFragment extends Fragment {
         });
         viewAlertType.setText(alert.type);
         viewAlertAddress.setText(alert.address);
-        if (alert.slider.image.size() > 0) {
+//        if (alert.slider.image.size() > 0) {
+        if (alert.slider.image != null) {
             viewImages.setVisibility(View.VISIBLE);
-            images = alert.slider.image;
-            adapter = new ImageAdapter(getFragmentManager(), images);
+//            images = alert.slider.image;
+//            adapter = new ImageAdapter(getFragmentManager(), images);
+            adapter = new ImageAdapter(getFragmentManager(), new ArrayList<>(Arrays.asList(alert.slider.image)));
             viewImages.setAdapter(adapter);
             viewIndicator.setViewPager(viewImages);
             adapter.registerDataSetObserver(viewIndicator.getDataSetObserver());

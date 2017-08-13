@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG_MENU = "menu";
 
     private static final String EXTRA_IS_ALERT = "isAlert";
+    private static final String EXTRA_ID = "is";
 
     private static final int STATE_REQUEST_MENU = -1;
     private static final int STATE_DONE = 0;
@@ -74,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String ACTION_RETRY_MENU = "retry_menu";
 
     private boolean isAlert;
+    private String id;
 
     private int state = STATE_REQUEST_MENU;
     private int selectedMenu = 0;
@@ -92,9 +94,10 @@ public class MainActivity extends AppCompatActivity {
     private ImageView viewSearch;
     private RecyclerView viewMenus;
 
-    public static Intent newInstance(Context context, boolean isAlert) {
+    public static Intent newInstance(Context context, boolean isAlert, String id) {
         Intent intent = new Intent(context, MainActivity.class);
         intent.putExtra(EXTRA_IS_ALERT, isAlert);
+        intent.putExtra(EXTRA_ID, id);
 
         return intent;
     }
@@ -106,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
         Intent extra = getIntent();
         if (extra != null) {
             if (extra.hasExtra(EXTRA_IS_ALERT)) isAlert = extra.getBooleanExtra(EXTRA_IS_ALERT, false);
+            if (extra.hasExtra(EXTRA_ID)) id = extra.getStringExtra(EXTRA_ID);
         }
 
         fragments.put(ACTION_LOADING, LoadingFragment.newInstance());
@@ -255,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
         String menu = itemMenus.get(position).title;
         if (!fragments.containsKey(menu)) {
             if (position == 0) {
-                fragments.put(menu, isAlert ? AlertFragment.newInstance() : HomeFragment.newInstance());
+                fragments.put(menu, isAlert ? AlertFragment.newInstance(id) : HomeFragment.newInstance());
             } else  if (position == 1) {
                 fragments.put(menu, ProfileFragment.newInstance());
             } else if (position == itemMenus.size() - 3) {
@@ -360,6 +364,15 @@ public class MainActivity extends AppCompatActivity {
                             state = STATE_DONE;
 
                             onSelectMenu(0);
+                            if (!isAlert && id != null) {
+                                Fragment fragment = VideoFragment.newInstance(id, null);
+                                fragmentStacks.add(fragment);
+                                switchFragment(
+                                        fragment,
+                                        R.anim.fragment_fade_in,
+                                        R.anim.fragment_fade_out
+                                );
+                            }
                         } catch (Exception e) {
                             switchFragment(
                                     ErrorFragment.newInstance(ACTION_RETRY_MENU, getString(R.string.json_format_error)),

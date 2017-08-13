@@ -62,29 +62,39 @@ public class Function {
         return Hour + Minute + Second;
     }
 
-    public static LatLng getLatLng(String url) {
+    //    public static LatLng getLatLng(String url) {
+    public static LatLng getLatLng(String latlong) {
         LatLng position = null;
-        Pattern pattern = Pattern.compile(".*/@(.*?)z/.*");
-        Matcher matcher = pattern.matcher(url);
-        if (matcher.matches()) {
-            try {
-                String[] matches = matcher.group(1).split(",");
-                Double lat = Double.valueOf(matches[0]);
-                Double lng = Double.valueOf(matches[1]);
-                position = new LatLng(lat, lng);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+//        Pattern pattern = Pattern.compile(".*/@(.*?)z/.*");
+//        Matcher matcher = pattern.matcher(url);
+//        if (matcher.matches()) {
+//            try {
+//                String[] matches = matcher.group(1).split(",");
+//                Double lat = Double.valueOf(matches[0]);
+//                Double lng = Double.valueOf(matches[1]);
+//                position = new LatLng(lat, lng);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+
+        try {
+            String[] matches = latlong.split("/");
+            Double lat = Double.valueOf(matches[0]);
+            Double lng = Double.valueOf(matches[1]);
+            position = new LatLng(lat, lng);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return position;
     }
 
     @SuppressWarnings("deprecation")
-    public static Spanned fromHtml(String html){
+    public static Spanned fromHtml(String html) {
         Spanned result;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-            result = Html.fromHtml(html,Html.FROM_HTML_MODE_LEGACY);
+            result = Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY);
         } else {
             result = Html.fromHtml(html);
         }

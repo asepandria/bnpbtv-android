@@ -31,9 +31,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
 
             Map<String, String> data = remoteMessage.getData();
+            String type = data.containsKey("type") ? data.get("type") : "";
+            String id = data.containsKey("id") ? data.get("id") : "";
             String title = data.containsKey("title") ? data.get("title") : "";
             String text = data.containsKey("text") ? data.get("text") : "";
-            sendNotification(title, text);
+            sendNotification(type, id, title, text);
         }
 
         if (remoteMessage.getNotification() != null) {
@@ -41,8 +43,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
     }
 
-    private void sendNotification(String title, String text) {
-        Intent intent = MainActivity.newInstance(this, true);
+    private void sendNotification(String type, String id, String title, String text) {
+        Intent intent = MainActivity.newInstance(this, type.equals("alert"), id);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT);

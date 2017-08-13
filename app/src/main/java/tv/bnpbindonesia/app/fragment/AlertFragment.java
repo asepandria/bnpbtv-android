@@ -52,6 +52,8 @@ public class AlertFragment extends Fragment {
     private static final String TAG_ALERT = "alert";
     private static final String TAG_VIDEOS = "videos";
 
+    private static final String ARG_ID = "id";
+
     private static final String BUNDLE_KEY_MAP = "alert-map";
 
     private static final int STATE_REQUEST_ALERT = -2;
@@ -64,7 +66,9 @@ public class AlertFragment extends Fragment {
 
     private int state = STATE_REQUEST_ALERT;
 
+    private String id;
     private Alert alert;
+
     private int currentPage;
     private ArrayList<ItemObject> datas = new ArrayList<>();
 
@@ -88,14 +92,22 @@ public class AlertFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static AlertFragment newInstance() {
+    public static AlertFragment newInstance(String id) {
         AlertFragment fragment = new AlertFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_ID, id);
+        fragment.setArguments(args);
+
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (getArguments() != null) {
+            id = getArguments().getString(ARG_ID);
+        }
 
         MapsInitializer.initialize(getContext());
 
@@ -293,7 +305,8 @@ public class AlertFragment extends Fragment {
 
                 googleMap.clear();
 //                    googleMap.getUiSettings().setAllGesturesEnabled(false);
-                LatLng position = Function.getLatLng(alert.googlemaps);
+//                LatLng position = Function.getLatLng(alert.googlemaps);
+                LatLng position = Function.getLatLng(alert.latlong);
                 if (position != null) {
                     googleMap.addMarker(
                             new MarkerOptions()
@@ -378,6 +391,7 @@ public class AlertFragment extends Fragment {
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> params = new HashMap<>();
                 params.put("function", "alert");
+                params.put("id", id);
                 return params;
             }
         };
