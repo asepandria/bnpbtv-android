@@ -34,6 +34,8 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -52,6 +54,7 @@ import tv.bnpbindonesia.app.gson.GsonMenu;
 import tv.bnpbindonesia.app.object.Alert;
 import tv.bnpbindonesia.app.object.ItemMenu;
 import tv.bnpbindonesia.app.object.Video;
+import tv.bnpbindonesia.app.service.MyFirebaseInstanceIdService;
 import tv.bnpbindonesia.app.share.Config;
 import tv.bnpbindonesia.app.share.Function;
 import tv.bnpbindonesia.app.util.VolleySingleton;
@@ -105,6 +108,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        String token = FirebaseInstanceId.getInstance().getToken();
+        Log.d(TAG, "token: " + token);
+
+        if (token != null) {
+            FirebaseMessaging.getInstance().subscribeToTopic("alert");
+            FirebaseMessaging.getInstance().subscribeToTopic("video");
+        }
 
         Intent extra = getIntent();
         if (extra != null) {

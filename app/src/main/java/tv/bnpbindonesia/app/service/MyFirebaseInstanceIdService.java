@@ -8,6 +8,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 
 public class MyFirebaseInstanceIdService extends FirebaseInstanceIdService {
     private static final String TAG = MyFirebaseInstanceIdService.class.getSimpleName();
+
     @Override
     public void onTokenRefresh() {
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
@@ -15,6 +16,7 @@ public class MyFirebaseInstanceIdService extends FirebaseInstanceIdService {
 
         if (refreshedToken != null) {
             FirebaseMessaging.getInstance().subscribeToTopic("alert");
+            FirebaseMessaging.getInstance().subscribeToTopic("video");
         }
     }
 }
